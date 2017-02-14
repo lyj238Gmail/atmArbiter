@@ -1,0 +1,316 @@
+
+\documentclass{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amssymb}
+
+%TCIDATA{OutputFilter=LATEX.DLL}
+%TCIDATA{Version=4.00.0.2312}
+%TCIDATA{Created=Thursday, May 10, 2012 10:51:29}
+%TCIDATA{LastRevised=Thursday, May 10, 2012 15:52:30}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+
+\newlength{\fminilength}
+\newsavebox{\fminibox}
+\newenvironment{fmini}[1][\linewidth]
+  {\setlength{\fminilength}{#1\fboxsep-2\fboxrule}%
+   \vspace{2ex}\noindent\begin{lrbox}{\fminibox}\begin{minipage}{\fminilength}%
+   \mbox{ }\hfill\vspace{-2.5ex}}%
+  {\end{minipage}\end{lrbox}\vspace{1ex}\hspace{0ex}%
+   \framebox{\usebox{\fminibox}}}
+
+\newenvironment{specification}
+{\noindent\footnotesize\tt\begin{fmini}\begin{tabbing}X\=X12345\=XXXX\=XXXX\=XXXX\=XXXX\=XXXX
+\=\+\kill} {\end{tabbing}\normalfont\end{fmini}}
+
+
+  \def\|#1|{\mathid{#1}}
+    \newcommand{\mathid}[1]{\ensuremath{\mathit{#1}}}
+   % \<name> or \codeid{name} denotes computer code identifiers
+   \def\<#1>{\codeid{#1}}   \newcommand{\codeid}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+%\input{tcilatex}
+\input{tcilatex}
+
+\begin{document}
+
+\begin{specification}
+
+
+
+$\mathtt{constr\_0\_0}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge \lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime
+},$\\
+
+$\mathtt{constr\_0\_1}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime }%
+\mathtt{,}$\\
+
+$\mathtt{constr\_0\_2}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot xGrantV%
+\mathtt{\wedge \mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}%
+^{\prime },}$\\
+
+$\mathtt{constr\_0\_3}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge \mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\\
+
+$\mathtt{constr\_1\_1}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime }\mathtt{,}$\\
+
+$\mathtt{constr\_1\_2}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+\mathtt{\mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\\
+
+$\mathtt{constr\_1\_3}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+\mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_1\_0}^{\prime }\mathtt{=yGrant\wedge \lnot xGrantV\wedge
+\mathtt{\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$%
+\\
+
+$\mathtt{constr\_2\_2}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{\mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\\
+
+$\mathtt{constr\_2\_3}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_2\_0}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$%
+\\
+
+$\mathtt{constr\_2\_1}^{\prime }\mathtt{=\lnot yGrantV\wedge
+xGrant\wedge \mathtt{yGrantV}^{\prime }\mathtt{\wedge \lnot
+xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_3\_3}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_3\_0}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_3\_1}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$\\
+
+$\mathtt{constr\_3\_2}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+\lnot yGrantV}^{\prime }\mathtt{\wedge xGrantV}_{0}^{\prime }}$\\
+
+$\mathtt{ant_{0}=When\ constr\_0\_0}^{\prime }\mathtt{\ AndList[Is0\
+req1,Is0\ req2,Is0\ req3],}$\\
+
+$\mathtt{ant_{1}=When\ constr\_0\_1}^{\prime }\mathtt{\ AndList[Is1\ req1],}$%
+\\
+
+$\mathtt{ant_{2}=When\ constr\_0\_2}^{\prime }\mathtt{\ AndList[Is0\
+req1,Is1\ req2],}$\\
+
+$ \mathtt{ant_{3}=When\ constr\_0\_3}^{\prime }\mathtt{\
+AndList[Is0\ req1,Is0\ req2,Is1\ req3],}$\\
+
+$ \mathtt{ant_{4}=When\ constr\_1\_1}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req2,Is0\ req3],}$\\
+
+$\mathtt{ant_{5}=When\ constr\_1\_2}^{\prime }\mathtt{\ AndList[Is1\ req2],}$%
+\\
+
+$ \mathtt{ant_{6}=When\ constr\_1\_3}^{\prime }\mathtt{\
+AndList[Is0\ req2,Is1\ req3],}$\\
+
+$ \mathtt{ant_{7}=When\ constr\_1\_0}^{\prime }\mathtt{\
+AndList[Is0\ req2,Is0\ req3,Is1\ req0],}$\\
+
+$\mathtt{ant_{8}=When\ constr\_2\_2}^{\prime }\mathtt{\ AndList[Is0\
+req0,Is0\ req1,Is0\ req3],}$\\
+
+$\mathtt{ant_{9}=When\ constr\_2\_3}^{\prime }\mathtt{\ AndList[Is1\ req3],}$%
+\\
+
+$\mathtt{ant_{10}=When\ constr\_2\_0}^{\prime }\mathtt{\
+AndList[Is0\ req3,Is1\ req0],}$\\
+
+$\mathtt{ant_{11}=When\ constr\_2\_1}^{\prime }\mathtt{\
+AndList[Is0\ req3,Is0\ req0,Is1\ req1],}$\\
+
+$\mathtt{ant_{12}=When\ constr\_3\_3}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req1,Is0\ req2],}$\\
+
+$\mathtt{ant_{13}=When\ constr\_3\_0}^{\prime }\mathtt{\
+AndList[Is1\ req0],} $\\
+
+$\mathtt{ant_{14}=When\ constr\_3\_1}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is1\ req1],}$\\
+
+$\mathtt{ant_{15}=When\ constr\_3\_2}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req1,Is1\ req2],}$\\
+
+$\mathtt{ant=AndList [ant_{0},...,ant_{15}]}$\\
+
+$\mathtt{cons=\ Next \ (grant\ bvAre\ grantV'),}$\\
+
+$\mathtt{assert=ant\leadsto cons}$\\
+
+\end{specification}
+
+\vspace{2mm}
+\begin{specification}
+
+
+$\mathtt{let\ consConstrIJ\  width\ N\ symbReqs\ grant\
+grantV\ i\ 0=}$\\
+ $\mathtt{\ \     let\ last=encode\ i\ width\ in}$\\
+   $\mathtt{\ \   let\ newLast=encode\ i\ width\ in}$\\
+   $\mathtt{\ \   let\ reqV'=map\ (\backslash k. (k=i)=> X |  ff) (0\ upto\ (N -
+   1))\
+   in}$\\
+   $\mathtt{\ \   let\ reqConstr=constrOfReq\ reqV'\ symbReqs\
+   in}$\\
+   $\mathtt{\ \   (grant\ bvAre\ newLast,      (grantV\ bvEq\ last)
+   \wedge
+   (reqConstr))}$\\
+
+
+$\mathtt{/\backslash consConstrIJ\ width\ N\ symbReqs\  grant\
+grantV\ i\ j =}$\\
+  $\mathtt{\ \    let\ last=(encode\ i\ width)\ in}$\\
+  $\mathtt{\ \    let\ j'=(i +j )\%N in}$\\
+ $\mathtt{\ \     let\ newLast=encode\ j'\ width in}$\\
+ $\mathtt{ \ \    let\ negReqs=1 \ upto\ (j - 1) in}$\\
+  $\mathtt{ \ \     let\  negReqs=map\ (\backslash k. ( (( k + i) \% N)))\ negReqs\
+  in}$\\
+
+   $\mathtt{\ \     let\  reqV'=map (\backslash k. (mem\ k\ negReqs)=>
+   ff|}$\\
+   $\mathtt{\ \  \ \  (k= j')  => tt |}$\\
+
+   $\mathtt{ \ \  \ \                       X) (0\ upto\ (N - 1))  in}$\\
+    $\mathtt{\ \  let\  reqConstr=constrOfReq\ reqV'\ symbReqs\
+    in}$\\
+
+  $\mathtt{\ \    (grant\ bvAre\ newLast,}$\\
+    $\mathtt{\ \    (grantV\ bvEq\ last)  \wedge  (reqConstr))}$\\
+
+
+\\
+
+
+$\mathtt{let\  consConstrI\ width\ N\ symbReqs\ grant\
+grantV\ i=}$ \\
+ $\mathtt{\ \    map\  (\backslash  j. consConstrIJ\ width\ N\ symbReqs\ grant}$\\
+ $\mathtt{\ \  \ \   grantV\ i\ j)  (0\
+ upto\
+ (N
+- 1))}$\\
+
+$\mathtt{let\  vect2Val\ vect = map (\backslash str. bvariable str)\ vect}$\\
+
+\\
+
+$\mathtt{let\  consSTEAssert\ grant\ req\ width\ N =}$\\
+  $\mathtt{\ \    let\  reqV=vect2Val\ req\ in}$\\
+  $\mathtt{\ \    let\  grantV=vect2Val\ grant\ in}$\\
+   $\mathtt{\ \   let\  Ant=AndList\ [grant\ bvAre\ grantV, req\ bvAre\ reqV ]
+   in}$\\
+   $\mathtt{\ \   let\  consConstrs=flat\ ( map\ }$\\
+   $\mathtt{\ \ \ \ (\backslash k. consConstrI\ width\ N \ reqV\ grant\ grantV\
+   k)}$\\
+  $\mathtt{\ \ \ \  (0 \ upto\ (N - 1)))\ in}$\\
+  $\mathtt{\ \    let\  consCons=map\ }$\\
+  $\mathtt{\ \ \ \ (\backslash apair. \ (Guard \ (snd\ apair)\ (fst\
+  apair)))}$\\
+   $\mathtt{\ \ \ \ consConstrs\
+  in}$\\
+  $\mathtt{\ \     Ant\leadsto\ (Next\ (AndList consCons))}$\\
+  \\
+
+  $\mathtt{let\ transIJ\ i\ 0\ width\ N\ req =}$\\
+
+$\mathtt{\ \ (i,i,}$\\
+
+$\mathtt{\ \ AndList\ (map\ Is0\ (req\ subtract\ [req !i])) )}$\\
+
+
+%$\mathtt{\ \ (grant\ bvAre\ (encode\ i\ width)))}$\\
+
+$\mathtt{/\TEXTsymbol{\backslash}\ transIJ\ i\ j\ width\ N\ req=}$\\
+
+$\mathtt{\ \ let\ j'=(i+j)\% N\ in}$\\
+
+$\mathtt{\ \ let\ negReqs=1\ upto\ (j - 1)\ in}$\\
+
+$\mathtt{\ \ let\ negReqs=map\ (\TEXTsymbol{\backslash}k. (req ! ((
+k + i) \% N)))\ negReqs\ in}$\\
+
+$\mathtt{\ \ let\ ant=AndList\ (((map\ Is0\ negReqs)}$\\
+
+$\ \ \ \ \mathtt{union\ [Is1\ (req ! j')]) )\ in}$\\
+
+%$\mathtt{\ \ let\ newLast=(encode\ j'\ width\ )\ in}$\\
+
+%$\mathtt{\ \ let\ cons=(grant\ bvAre\ newLast)\ in}$\\
+
+$\mathtt{\ \ (i,j' , ant);}$\\
+
+
+
+$\mathtt{let\ transFromI\ WIDTH\ req\ i =}$\\
+
+$\mathtt{\ \ let\ NUM\_PORTS=2**WIDTH\ in}$\\
+
+$\mathtt{\ \ map\ (\TEXTsymbol{\backslash}j. transIJ\ i\ j\
+WIDTH\ NUM\_PORTS\ req)}$\\
+
+$\mathtt{ (0\ upto\ (NUM\_PORTS-1));}$\\
+
+$\mathtt{let\ transform\  width\ grantV\ grantV'\ triple=}$\\
+$ \mathtt{val (i,j',ant)=triple\ in}$\\
+$\mathtt{\ \ let\ last=(encode\ i\ width\ )\ in}$\\
+  $\mathtt{\ \ let\ newLast=(encode\ j'\ width\ )\ in}$\\
+  $\mathtt{\ \ let\ constr=(constrOfReq\ last \ grantV )\wedge constrOfReq\ newlast \ grantV' )\ in}$\\
+   $\mathtt{\ \ when\  constr\  ant}$\\
+
+
+$\mathtt{let\ transFrom\ WIDTH\ req=}$\\
+
+$\mathtt{\ \ let\ NUM\_PORTS=2**WIDTH\ in}$\\
+
+$\mathtt{\ \ let\ triples= flat\ (map\ (transFromI\ WIDTH\ req)\ (0\ upto\ (NUM\_PORTS-1)));}$\\
+
+$\mathtt{\ \ in\ map\ (transform\  width\ grantV\ grantV')\ triples}$\\
+
+
+$\mathtt{let\ symbIdexAssert\ WIDTH\ req\ grant=}$\\
+ $\mathtt{  let\ grantV=vect2Val\ grant\ in}$\\
+
+  $\mathtt{let\ grant'=map\ (\backslash str.str"'")\ grant\ in}$\\
+  $\mathtt{let\ grantV'=vect2Val\ grant'\ in}$\\
+  $\mathtt{let\ ant=AndList\ (transFrom\ WIDTH\ req)@[grant\ bvAre\
+  grantV)
+  in}$\\
+  $\mathtt{let cons=Next\ (grant\ bvAre\ grantV')}$\\
+  $\mathtt{in\ ant\leadsto cons}$
+\end{specification}
+
+\end{document}

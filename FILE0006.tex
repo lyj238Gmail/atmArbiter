@@ -1,0 +1,1483 @@
+%\usepackage{latex8}
+
+\documentclass[conference]{IEEEtran}
+%\documentclass[10pt]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{times}
+\usepackage[dvips]{graphicx}
+\usepackage{lscape,moreverb,latexsym,graphics,makeidx}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{isabelle}
+\usepackage{isabellesym}
+\usepackage{longtable}
+
+\setcounter{MaxMatrixCols}{10}
+%TCIDATA{OutputFilter=LATEX.DLL}
+%TCIDATA{Version=4.00.0.2312}
+%TCIDATA{LastRevised=Wednesday, April 13, 2011 10:51:04}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+%\newlength{\fminilength}
+%\newsavebox{\fminibox}
+%\newenvironment{fmini}[1][\linewidth]
+ % {\setlength{\fminilength}{#1\fboxsep-2\fboxrule}   \vspace{2ex}\noindent\begin{lrbox}{\fminibox}\begin{minipage}{\fminilength}   \mbox{ }\hfill\vspace{-2.5ex}}  {\end{minipage}\end{lrbox}\vspace{1ex}\hspace{0ex}   \framebox{\usebox{\fminibox}}}
+%\newenvironment{specification}
+%{\noindent\tt\begin{fmini}\begin{tabbing}X\=X12345\=XXXX\=XXXX\=XXXX\=XXXX\=XXXX
+%\=\+\kill} {\end{tabbing}\normalfont\end{fmini}}
+
+\newlength{\fminilength}
+\newsavebox{\fminibox}
+\newenvironment{fmini}[1][\linewidth]
+  {\setlength{\fminilength}{#1\fboxsep-2\fboxrule}%
+   \vspace{2ex}\noindent\begin{lrbox}{\fminibox}\begin{minipage}{\fminilength}%
+   \mbox{ }\hfill\vspace{-2.5ex}}%
+  {\end{minipage}\end{lrbox}\vspace{1ex}\hspace{0ex}%
+   \framebox{\usebox{\fminibox}}}
+
+\newenvironment{specification}
+{\noindent\footnotesize\tt\begin{fmini}\begin{tabbing}X\=X12345\=XXXX\=XXXX\=XXXX\=XXXX\=XXXX
+\=\+\kill} {\end{tabbing}\normalfont\end{fmini}}
+
+
+  \def\|#1|{\mathid{#1}}
+    \newcommand{\mathid}[1]{\ensuremath{\mathit{#1}}}
+   % \<name> or \codeid{name} denotes computer code identifiers
+   \def\<#1>{\codeid{#1}}   \newcommand{\codeid}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+%\input{tcilatex}
+
+\input{tcilatex}
+
+\begin{document}
+
+\title{Enhanced Symbolic Simulation of a Round-robin Arbiter}
+
+\author{\IEEEauthorblockN{Yongjian~Li\ \ \ \ \ \ \ \ \ Naiju~Zeng}
+\IEEEauthorblockA{State Key Laboratory of Computer Science\\
+Institute of Software\\
+Chinese Academy of Sciences\\
+Beijing, China\\
+E-mail: lyj238@ios.ac.cn}
+\and
+\IEEEauthorblockN{William~N.~N.~Hung}
+\IEEEauthorblockA{Synopsys Inc.\\
+Mountain View, California\\
+USA\\
+E-mail: william\_hung@alumni.utexas.net}
+\and
+\IEEEauthorblockN{Xiaoyu~Song}
+\IEEEauthorblockA{ECE Department\\
+Portland State University\\
+Portland, Oregon\\
+USA}}
+
+\maketitle
+
+\begin{abstract}
+In this work, we present our results on formally verifying hardware
+design of round-robin arbiter which is the core component in many
+real network systems. Our approach is enhanced STE,
+which explores fully symbolic simulation
+for not only one round of round-robin arbitration, but also the
+sequential behaviors of the arbiter. Our experiments demonstrate
+that the enhanced STE specification for real-world hardware design
+can be finished automatically in a reasonable time and memory usage.
+\end{abstract}
+
+\section{Introduction}
+
+A fast arbiter is one of the most dominant factors for high
+performance network switches such as ATM (Asynchronous Transfer
+Mode) network~\cite{GinsburgATM,Paul94}. Fast and efficient
+switch arbiters play a key role in switching packets for
+Network-on-Chip~(NoC)~\cite{DallyNOC}.
+In order to provide a high speed and
+cost-effective implementation of the arbitration scheme where
+multiple packets from different input ports compete for the same
+output port, designers usually implement these arbiters directly in hardware.
+However, these hardware arbiter designs are
+very tedious and error-prone. Design errors in network components
+may have disastrous effects, especially if networks are used in
+financial or safety-critical applications, where communication
+errors could cause loss of money or life.
+
+In order to guarantee the correctness of the arbiter hardware design,
+simulation and testing approaches are traditionally
+adopted. However, it is practically impossible to run exhaustive
+test or simulation cases for all the routing cases under
+arbitration. For instance, in a $N\times N$ round-robin arbiter
+studied in this paper, where $N$ is the number of
+input/output ports, the exhaustive simulation cases in Boolean
+domain are $2^N\times N$.  Thus, the use of formal verification with
+proper abstraction or reduction techniques is gaining interest
+because the correctness of a formally verified design implicitly
+involves all cases regardless of the input cases. % N ORDER TO
+%GUARANTEE THE CORRECTNESS OF THE HARDWARE DESIGN,
+
+%. ATM (Asynchronous Transfer Mode) has been considered as an
+%appropriate network technology to address the variety of needs for
+%new high-speed, high-bandwidth applications. \ Although ATM has been
+%considered as the most important communication mechanism in the
+%current times, there is no effective formal verification to the
+%real-world ATM hardware.
+
+Symbolic trajectory evaluation (STE) is an efficient formal hardware
+verification method that has grown from the combination of
+multi-valued simulation and symbolic simulation
+\cite{CarFmBySymEvaOfPartTraj}. It has shown great promise in
+verifying medium to large scale industrial hardware designs with a
+higher degree of automation. STE has been in active use in Intel,
+Motorola, and IBM. In Intel, for instance, STE was used to verify a
+floating point arithmetic unit against IEEE standard 754 and a
+complex IA
+instruction length decoder unit \cite%
+{joeraeryFloatPoint,aggardCombineTheoremSTE}. In addition, the FORTE
+formal hardware verification tool, which combines STE and theorem
+proving in a higher-order logic, has been developed at
+Intel~\cite{Forte}.
+ Generalised
+Symbolic Trajectory Evaluation (GSTE) is an extension of STE that
+can deal with properties ranging over unbounded time
+\cite{YangS03,yangTech,DBLP:conf/iccad/YangG02}.
+In GSTE, specification on cicuits are given by assertion graphs, which are
+$\forall$-automaton.
+
+In this work, we present our results on formally verifying hardware
+design of a round-robin arbiter which is the core component in many
+real-world network systems. Our approach is based on STE,
+which is a marriage of ternary-valued and
+symbolic simulation. The first arbiter under study  is a core component of the Fairisle %$%
+%4\times 4$
+switch fabric. % which is also a part of the Fairisle ATM network.
+The Fairisle ATM network was designed and used at the Computer
+Laboratory of the University of Cambridge. The arbiter performs
+round-robin arbitration among requests for a single output port.
+Then we generalize our designs to $N \times N$ configuration size,
+and give a parametric proof  script to verify such a generalized
+designs. %Here $N$ can reach the number of requests of a real-world
+%arbiter.
+%The arbitration decides whether a
+%request
+%should be forwarded to a proper destination port or pended to the next round
+%arbitration. Therefore, the arbiter plays a key role in forward messages
+%from input ports to destination ports.
+
+The main contributions of our works are twofold. The first one is a
+natural specification of the expected behavior of the arbiter. We
+analyze the specifications on both one round arbitration and the
+sequential behavior of the arbiter. The second is the fully symbolic
+simulation of the arbiter against the proposed specification. We
+emphasize that the fully symbolic simulation in this context means
+the exhaustive simulation for all the input patterns. STE plays a
+key role in
+our verification. It reduces the complexity of the verification from
+$2^{N}\times N$ to $N\times N$ for a $N\times N$ round-robin arbiter.
+Due to this substantial complexity decrease at the exponential
+scale, our verification is fully automated by running FORTE, which
+is an industrial STE tool originated from Intel. At last, our verification
+is scalable in the sense that we can verify a $N \times N$
+round-robin arbiter by instantiating the parameterized proof script
+with the parameter $N$.% because our verification script in FL is
+%parametric.
+Our experiments show that the parameter $N$ can reach a modest size
+in the industrial design.
+%\bigskip
+
+%old method. NOT scalable
+
+%ATM Background
+
+%
+
+\subsection{Related work}
+
+Although the principles of round-robin arbitration are viewed as the
+most important technology of the global communications, there exists
+few published results addressing a thoroughly formal verification of
+a hardware design of a round-robin arbiter in an automated way. To
+our best knowledge, there are only a few cases that sidewipe this
+topic in the literature, which is discussed below.
+
+In \cite{PaulTech94,Paul94}, Curzon formally verified the $4 \times 4$
+fabric of the Fairisle switch by using the HOL theorem prover. As
+a core component of the switch, the arbiter is verified by
+describing the behavioral and the structural specifications of the
+arbiter and proving the HOL formula of the structure implying that
+of the behavior. The proof style is from bottom to up, the
+components of the arbiter are verified down to the gate level, and
+then the separated proofs were then combined to prove the
+correctness of the arbiter. As a component of the switch, the proofs
+of the arbiter itself are used to prove the correctness of the whole
+switch.
+
+Chen et al. at Fujitsu Digital Technology Ltd exploited symbolic
+model checking to dectect a design error in an ATM circuit
+\cite{ChenYF94}. Using SMV, they identified the design error
+by checking properties described in CTL. In order to avoid
+state space explosion, they abstracted the data width of the
+addresses from 8 bits to 1 bit, and the number of addresses in the
+WAF (write Address FIFO) from 168 to 5. However, due to the above
+reduction, the circuit model is too coarse, and some fine-grained
+properties cannot be checked, therefore a more detailed (gate-level)
+model was needed for a thorough verification of ATM switch circuit.
+
+Tahar et al. presented several techniques for modeling and formal
+verification of the Fairisle  ATM switch fabric using multiway
+decision graphs (MDG)~\cite{DBLP:journals/tcad/TaharSCZLM99}.  They
+modeled and verified the switch fabric at three levels of
+abstraction: behavior, register transfer level (RTL), and gate
+level. In a first stage, they validated the high-level
+specification by checking specific safety properties that reflect
+the behavior of the fabric in its real life operating environment. Using
+the intermediate RTL model, they hierarchically completed the
+verification of the original gate-level implementation of the switch
+fabric against the behavioral specification. Since MDG's avoid
+model explosion induced by data values, this work demonstrates the
+effectiveness of MDG-based verification as an extension of
+ROBDD-based approaches.
+
+Among the aforementioned work, the verification of round-robin
+arbitration is exhaustive in \cite{PaulTech94,Paul94} due to the
+strong modelling and reasoning ability of HOL theorem proving.
+However, the use of HOL is interactive and requires much expertise
+to guide the verification process manually. Besides, the proofs were
+not scalable. That is to say, the proofs are only for the arbiter
+with $4 \times 4$ configuration size. When tracking the design
+changes and proving the properties of the arbiter with $16
+\times 16$ configuration size. The original proof of the $4 \times
+4$ arbiter must be fundamentally modified to verify the arbiter with
+$16 \times 16$ size \cite{CurzonATM}.
+
+ In contrast, the model-checking
+verification performed by Chen et al. and Tahar et al. were automatic.
+Since
+the complexity of all the arbitration cases of the arbiter is
+$2^{N}\times N$ in the terms of the number of requests $N$, it
+would be difficult to verify the correctness of round-robin arbitration
+in a common Boolean value or first order value based model checker.
+Due to state space explosion, these model-checking works failed to
+complete exhaustive exploration of arbitration cases. For instance,
+in \cite{DBLP:journals/tcad/TaharSCZLM99}, the authors only verified a
+concrete routing case from input port 0 to output port 0 in Property
+3. They did not verify all the routing cases.
+
+To the best of our knowledge, few work has applied STE to the
+verification of the hardware design of components of network systems
+including the round-robin arbiter.
+
+%To the best of our knowledge, no one has tried to combine symmetry reduction
+%with GSTE until now. In fact, because the symmetries abound in the circuits
+%under data-dominated circuits, symmetry reduction is an effective approach
+%which can help us decrease the complexity of verification in the GSTE
+%context.
+
+%Difference between our approach and  Darbari's lies in three
+%aspects: (1) ours is aimed to a netlist model without symmetry
+%5information recorded externally, and therefore needs automatically
+%detect the symmetry on line, while his approach is aimed to a
+%netlist model compiled from a function program language which
+%records symmetry, and identifies symmetry by type-checking; (2) ours
+%does decomposition and symmetry reduction in a light-weight theorem
+%prover which is implemented in FORTE, and calls STE as a special
+%tactic; while Darbari does these  tasks in the HOL theorem prover,
+%and runs STE in HOL by transforming a circuit EXLIF format into a
+%simulatable model in HOL; (3) proof control structures, each of
+%which is called a tactical, is used to compose proof tactics. A
+%tactical
+% is formally a higher-order functor operating on tactics. Properly
+%using tactical makes proof as automatically as possible, and
+%alleviates the burden of people's interaction with the theorem
+%prover.
+
+
+
+\paragraph*{Presentation of the paper\ \ \ }
+
+In this work we use a notation in function programming style to
+illustrate both our theory and implementation. Lemmas about lists,
+sets, etc., are polymorphic, and a function is usually defined in a
+curried form instead of a tupled form, that is, we often use the
+notation $f~x~y$ to stand for $ f(x,y)$. The advantage of a curried
+function is to allow a partial function application~\cite{Pau96}. We
+use the notation $\isasymlbrakk
+A_{1};A_{2};...;A_{n}\isasymrbrakk\Longrightarrow B$ to mean that
+with assumptions $A_{1},\ldots ,A_{n}$, we can derive a conclusion
+$B$. Namely $ \Longrightarrow $ is the implication operator in our
+meta-logics. For a pair $(a,b)$, $\mathsf{fst\ }(a,b)\equiv a$ and
+$\mathsf{snd\ }(a,b)\equiv b$. We write $x:xs$ for the list that
+extends $xs$ by adding $x$ to the front of $ xs $, $\left[
+x_{1},..x_{n}\right] $ for a list $x_{1}:..x_{n}:[]$, $xs@ys$ for
+the result list by concatenating $xs$ with $ys $, $0\ \mathsf{upto}\
+i$ for the list $[0,...,i-1]$, $xs!i$ for the $i^{th}$ element of
+the list $xs$ (counting from 0 as the first element),
+$\mathsf{set}~xs$ for the set of all the elements in $xs$, $x\
+\mathsf{mem}\ ls$ for $x\in (\mathsf{set}\ ls),$ $
+\mathsf{length}~xs$ for the length of the list $xs,$
+$\mathsf{last}~xs$ for the last element of the list $xs,$ and
+$xs\cup _{L}ys$ for the union of elements of two lists$.$ Function
+$\mathsf{itlist\ }f\mathsf{\ }slist\mathsf{ \ }base$ returns: $f\
+(slist!0)\ (f$ $(slist!1)\ (...(f\ (last\ slist)\ base))),$
+$\mathsf{zip\ }xs\mathsf{\ }ys$ zips two lists $xs$ and $ys$
+together to generate a list of pairs$,$ $\mathsf{map\ }f\mathsf{\
+}xs$ applies $f$ to each element in $xs$. Boolean expression type is
+written as $ \mathsf{bool},$ which may be constructed as follows:
+$\mathsf{T}$, $\mathsf{F }$, $\mathsf{variable\ string}$ and
+$\mathsf{AND(\wedge )}$, $\mathsf{ OR(\vee )}$, $\mathsf{NOT(\lnot
+)}$, $\mathsf{IMPLY(\longrightarrow ),}$ $ \mathsf{XNOR}$, and
+$\mathsf{XOR}$. Here we add a "b" before these constructors because
+we want to use it to distinguish them with the counterparts in the
+four valued lattice domain, which we will introduce in the next
+section.
+
+The remainder of this paper is organized as follows: %Section \ref%
+%{Isabelle:introduction} briefly introduces the Isabelle notations used in
+%this paper.
+Section~\ref{sec:background} introduces preliminary theory of
+round-robin arbitration of switch fabric.
+Section~\ref{sec:STESpecRoundRobin} formalized the STE specification
+of one round of the round-robin arbitration. Section~\ref{sec:GSTE}
+uses GSTE to model check the sequential behaviors of the round-robin
+arbitration. Section~\ref{sec:experiments} shows the experiment
+results.
+ Section~\ref{sec:conclusion} concludes the paper.
+
+\section{Background}\label{sec:background}
+
+\subsection{$N \times N$ Switch Fabric and Arbitration}
+
+In this section, we first briefly introduce some background on a
+Switch Fabric and Arbitration problem.
+%an overview of the ATM
+%switch.
+%Here we use the $4 \times 4$ one in \cite{Paul94,} as an
+%example to illustrate our method. However, we will show that our
+%verification can be generalized to any $N \times N$ case. This
+%subsection and the following one for the introduction on the ATM
+%switch and the round-robin arbiter are quoted from \cite{} with
+%minor modification.
+
+A switch fabric, which is shown in Fig. \ref{fig:atmSwitch},
+consists of three types of components: input port controllers,
+output port controllers and a switch fabric\footnote{This figure is
+taken from \cite{Paul94}, which illustrated the Fairisle  network.
+Here we generalize it to a $N \times N$ network switch.}. Each
+input (output) port controller is connected to one input (output)
+link of the switch, and to the switching fabric. A cell arrives at
+an input port controller on an incoming transmission line. It then
+passes through the fabric and arrives at an output controller. The
+output port controller transmits the cell on its outgoing
+transmission line. %input ports, output ports and
+%a switch fabric. %Each input (output) port controller is connected to
+%one input and output link of the switch, and to the switching
+%fabric.
+%A cell arrives at an input port   on an incoming transmission line.
+%It then passes through the fabric arriving at an output port, from
+%which the cell is transmitted on its outgoing transmission line.
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.5\textwidth]{atmSwitch.eps}
+\end{center}
+\caption{An Overview of the Switch Fabric} \label{fig:atmSwitch}
+\end{figure}
+
+
+The switch fabric switches cells from input controllers to output
+controllers. If different input controllers inject cells into the
+fabric at the same time which are destined for the same output port
+controller, then only one will initially succeed. The others will be
+rejected and must retry later. The fabric arbitrates
+between such cells.
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.5\textwidth]{Arbiter.eps}
+\end{center}
+\caption{An Overview of the Arbiter} \label{fig:arbiter}
+\end{figure}
+
+In fact, there are $N$ arbiters in $N \times N$ fabric switch,
+each of which is in charge of the arbitration for requests from all
+input porters which are destined for an output port. Because the
+structure of an arbiter is the same as that of any other one,  we
+only analyze one arbiter. An overview of the structure of an
+arbiter design is shown in Fig. \ref{fig:arbiter}.
+
+The arbiter enforces an arbitration policy for a single output port.
+It takes as input a request vector, $ltReq$, indicating which inputs
+are making requests for the output. %There are also two inputs
+ %routeEnable$ and $frameStart$ which indicates when an arbitration
+%within a frame should be made.
+
+Its output is a grant vector which indicates the encoding of the
+input whose request is currently valid. %Another output $outDisable$
+%indicates whether the $grant$ node is currently valid.
+For instance,
+$ltReq=[\mathsf{tt},\mathsf{ff},\mathsf{tt},\mathsf{ff}]$, and after
+one cycle of arbitration, the outputs change to the following
+status: %$outDisable=\mathsf{ff}$, and
+$grant=[\mathsf{ff},\mathsf{ff}]$. This means that the first and
+third input port  make requests, and the first input port is granted
+to transfer the data.
+
+Round-robin is an important arbitration policy which is extensively
+adopted in network systems. In general, the request, which has the
+highest priority in round-robin order, will be granted in each
+cycle.  We will explain formally the round-robin policy in the next
+sections. This policy guarantees fairness (no starvation) among
+requests and allows a request granted whose round-robin turn is
+later but who is ready now. A reliable prediction of the worst-case
+wait time is another advantage of the round-robin protocol. The
+worst-case wait time is proportional to the number of requestors
+minus one. The  round-robin arbiter works as follows. In each cycle,
+one of the requests (in round-robin order) has the highest priority
+to be granted. If the token-holding master does not need the
+resource in this cycle, the master with the next highest priority
+who sends a request can be granted the resource, and the highest
+priority master then passes the token to the next master in
+round-robin order.
+
+ \subsection{STE and GSTE}
+ STE  is a formal verification technique that is based on ternary
+%% symbolic simulation. In STE, specifications are given as  assertions
+ of the form $ant\leadsto cons$ where both $ant$ and $cons$ are
+ trajectory formulae. $ant$ is called the antecedent, which specifies
+ with symbolic values that are used to drive the simulation. $cons$
+ is called the consequent, which specifies the expected results of
+ the
+ simulation. %A Assertions specify a set of design properties in a
+ %restricted temporal logic form.
+ An STE tool such as FORTE can automatically check to see if a given
+ circuit $C$ satisfies a a given STE assertion. If so, we write
+ $\mathsf{cktSat}\ C\ ant\leadsto cons$.
+
+
+
+ Four values $\mathsf{ff}$, $\mathsf{tt},$ $\mathsf{X}$, and
+ $\mathsf{\top }$ are used in STE simulation
+ \cite{CarFmBySymEvaOfPartTraj}. $\mathsf{ff}$ and
+ $\mathsf{tt}$ are standard binary values false and true. The third value
+ $\mathsf{X}$ stands for an unknown value, while the fourth value
+ $\top $ a
+ clash value. Formally, we define $\mathbb{V}$$=_{df}\left\{ \mathsf{ff},%
+ \mathsf{tt},\mathsf{X},\mathsf{\top }\right\} $
+
+ The first concept is the circuit model used for STE.  A circuit is
+ modelled by a netlist, which is a set of nodes (or wires) connected
+ by logical entities such as gates and one-phase delays. Gates
+ describe combinational logics deciding the relationship between
+ values of nodes. Delays refer to all sequential elements which can
+ keep "state". A  circuit state is an instantaneous snapshot of a
+ circuit behavior  given by an  assignment of $\mathbb{V}$ to nodes
+ of the circuit.
+
+% %Here we use a type $\mathtt{node}$ to represent type of nodes. A
+%% %circuit state is an instantaneous snapshot of a circuit behavior
+%% %given by an
+%% %assignment of lattice values to nodes of the circuit. Therefore, type $%
+%% %\mathtt{state}\mathtt{=node}\ \Rightarrow \mathtt{boolPairs}$ is
+%% %defined. A
+%% %state sequence assigns a state to a time point. Here we still use $\mathsf{%
+%% %nat}$ to define the type $\mathsf{time}$. Thus, we define $\mathtt{%
+%% %stateSeq=time}\Rightarrow \mathtt{state}$.
+
+% Here we adopt the proposal in \cite{DBLP:conf/csr/RoordaC06,Li09}
+ %for the state transition function of a circuit. This state
+%transition function defines not only the information propagation
+%forwards from one time point to next time point, but also those
+%occurring instantaneously through the combinational parts in a time
+%point. For each circuit $c$, we can induce a next state functor
+%operator $Y::\mathtt{stateSeq\Rightarrow stateSeq}$ such that $Y\ \
+%$is a closure function. Roughly speaking, the words "a closure
+%function $Y\ \ $" means that applying $Y\ \ $once can derive a
+%closure of
+%information in some form. %For instance, $\mathsf{fclosure%
+%}\ nl\ s$ is a closure of information on the result simulation state
+%of a circuit $nl$ at the driving state $s$.
+%In detail, (1) $Y\ \ $ is \emph{monotonic}, $Y\ \ x\sqsubseteq Y\ \ y$ if $%
+%x\sqsubseteq y%\footnote{%
+%Here the relation $\leq $ is some kind of partial order. In lattice domain, $%
+%\sqsubseteq $ is a partial order.} .$ (2) $Y\ \ $is
+%\emph{idempotent}: $Y\ \ x=Y\ \ \left( Y\ \ x\right) $; (3) $Y\ \
+%$is \emph{extensive}: $x\sqsubseteq Y\ \ x$. See \cite{Li09} for
+%detailed account. %In STE, a circuit model $M:\mathtt{state\Rightarrow
+%state}$ are represented by a next-state function from state to
+%state. This $Y$ is also known as an excitation function, which is
+%constructed on-the-fly during simulation, from the netlist
+%description of the circuit.
+
+
+ Here we use a simple example to give a brief illustration for the
+ concepts used in STE verification. Figure \ref{fig:memory} shows a
+ netlist of 2-cell single-bit memory, which is modified from a GSTE
+ tutorial \cite{DBLP:conf/atva/Yang06}.
+
+ \begin{figure}[tbph]
+ \begin{center}
+ \includegraphics[angle=270, width=.4\textwidth]{memory.eps}
+ \end{center}
+ \caption{2-cell single-bit memory} \label{fig:memory}
+ \end{figure}
+%% %The excitation function $Y$ is as follows:
+
+%% %$Y\ s\ m_{0}=((s\ wr\wedge _{4}\lnot _{4}s\ a)\rightarrow _{4}s\ din)\wedge
+%% %_{4}((\lnot _{4}s\ wr\vee _{4}s\ a)\rightarrow _{4}s\ m_{0})$
+
+%% %$Y\ s\ m_{1}:((s\ wr\wedge _{4}s\ a)\rightarrow _{4}s\ din)\&((\lnot _{4}s\
+%% %wr\vee _{4}\lnot _{4}s\ a)\rightarrow _{4}s\ m_{1})$$write=\mathsf{AndList}[\mathsf{Is1}\ wr,din\ \mathsf{isB}\ bD,a\
+
+ Let $write=\mathsf{AndList}[\mathsf{Is1}\ wr,din\ \mathsf{isB}\
+ bD,a\ \mathsf{isB}\ bA]$, $retain=\mathsf{AndList}[wr\ \mathsf{isB}\
+ bWr$, $a\
+ \mathsf{isB}\ (bWr\rightarrow \lnot \ bA)]$, $read=\mathsf{AndList}[\mathsf{%
+ Is0}\ wr,a\ \mathsf{isB}\ A],$ $outResult=dout\ \mathsf{isB}\ bD$.
+ Here $\mathsf{Is1}$($\mathsf{Is0}$)\ $wr$ simply specifies that the
+ value of the node $wr$ is $\mathsf{tt}$($\mathsf{ff}$), and
+ $\mathsf{AndList}\ fs$ is a conjunction of trajectory formulae list
+ $fs$. $\mathsf{When}\ b \ f$ specifies that only when the Boolean
+ expression $f$ is true, the trajectory formula $b$ holds, otherwise
+ all the nodes are set the value $\mathsf{X}$.
+ The notation $din\ \mathsf{isB}\ bD$ simply abbreviates $ \mathsf{%
+ AndList\ [When\ }bD\ (\mathsf{Is1}\ din),[\mathsf{When\ \lnot }bD\ (\mathsf{Is0}%
+ \ din)]$, which assigns a symbolic value $bD$ to the node $din$. A
+ novel trajectory formula \textsf{chaos} is introduced here to
+ represent a state where the values of all the nodes in the circuit
+ are unknown. We also define $\mathsf{Next^1}\ f=\mathsf{Next}\ f$,
+ $\mathsf{Next^{N+1}}\ f=\mathsf{Next}\ (\mathsf{Next}^{N}\ f)$.
+
+ Let $ant$=$\mathsf{AndList}[write, \mathsf{Next}\ retain,
+ \mathsf{Next^2}\ read]$, $cons=\mathsf{Next^2}\ outResult$. The STE
+ assertion $ant\leadsto cons$ specifies that if a value is written to
+ a memory cell, and no other writes to the cell in the next cycle,
+ then the read from the cell immediately after will return the value.
+
+ One of the main  limitation of STE is that it can only deal with
+ properties ranging over a finite number of time steps. Generalised
+ Symbolic Trajectory Evaluation (GSTE) is an extension of STE that
+ can deal with properties ranging over unbounded time
+ \cite{YangS03,yangTech,DBLP:conf/iccad/YangG02}.
+ In GSTE, specification on cicuits are given by assertion graphs, which are $%
+ \forall$-automaton. Figure \ref{fig:memoryGsteGraph} shows an
+ assertion graph for the netlist in figure \ref{fig:memory}. This
+ assertion graph  specifies that if a value is written to a memory
+ cell, and no other writes to the cell in the next cycle, then the
+ read from the cell immediately after will return the value.
+
+ \begin{figure}[tbph]
+ \begin{center}
+ \includegraphics[width=.4\textwidth]{memoryGraph.eps}
+ \end{center}
+ \caption{GSTE assertion graph for memory cell}
+ \label{fig:memoryGsteGraph}
+ \end{figure}
+
+
+ An STE assertion such as the aforementioned one $ant\ \leadsto\
+ cons$ can be seen as a linear assertion graph shown as (b) in Figure
+ \ref{fig:gsteGrapgCollections}. While an assertion GSTE assertion
+ graph with loops such as Figure \ref{fig:gsteGrapgCollections} can
+ be seen as a collection of linear assertion graphs.
+
+ \begin{figure}[tbph]
+ \begin{center}
+ \includegraphics[width=.4\textwidth]{gsteCollections.eps}
+ \end{center}
+ \caption{STE assertions and GSTE assertion graphs}
+ \label{fig:gsteGrapgCollections}
+ \end{figure}
+%% %Suppose that $sq$ is state sequence such that $sq\ 0$
+%% %$a=\mathsf{tt},$ $sq\ 0\ wr=\mathsf{tt},$ $sq\ 0\ din=\mathsf{tt},$
+%% %and $sq\ 0\ n=\mathsf{X}$ for any other nodes $n$, and $sq\ 1$
+%% %$wr=\mathsf{ff},$ $sq\ 1\ n=\mathsf{X}$ for any other nodes $n$,
+%% %$mem$ is the next state function for the circuit in Figure
+%% %\ref{fig:memory}, after one simulation step for the circuit is
+%% %finished, then the result state sequence $mem$ $sq$ after simulation
+%% %satisfies that $mem$ $sq\ 0\ n=sq\ 0\ n$ if $n\in
+%% %\{wr,a,din,m_{0},m_{1},out\}, $ $mem$ $sq\ 0\ sel_{0}=\mathsf{ff},$ $mem$ $%
+%% %sq\ 0\ sel_{1}=\mathsf{tt}.$ At the second point, $mem$ $sq\ 1\ m_{1}=%
+%% %\mathsf{tt,}$ $mem $ $sq\ 1\ n=sq\ 1\ n$ for any other nodes $n.$
+
+
+\subsection{HOL specification of One Round-Robin Arbitration}
+
+This subsection is mainly taken from HOL specification of
+round-robin arbitration in the counterpart section in \cite{Paul94}.
+Given an indication of the last value selected, round robin
+arbitration returns the next highest value requested, with suitable
+wrap around from the highest possible request to the lowest.
+
+\vspace{2mm}
+\begin{specification}
+$\mathtt{let\ SUC\_MODN\ N\ last=}$\\
+
+\>$\mathtt{(last+1=N)=>\ 0|\ (last+1);}$\\
+
+$\mathtt{letrec\ RoundRobin\ 0\ requestSet\ last\ N=0}$\\
+
+$\mathtt{/\backslash \ RoundRobin\ n\ requestSet\ last\ N=}$\\
+
+\>$\mathtt{let\ tryNext=SUC\_MOD\ N\ last\ in}$\\
+
+\>$\mathtt{((tryNext\ mem\ requestSet)=>\ tryNext}$\\
+
+\>$\mathtt{|RoundRobin\ (n-1)\ requestSet\ tryNext \ N);}$\\
+
+\\
+
+$\mathtt{let\ RoundRobinArbiter\ N\ requestSet\ last=}$\\
+
+\>$\mathtt{(requestSet=[])=>NORESULT|}$\\
+
+\>$(\mathtt{RESULT\ (RoundRobin\ N\ requestSet\ last\ N));}$\\
+\end{specification}
+
+  The round-robin arbitration is specified by the function $\mathsf{%
+RoundRobinArbiter}$ which has several arguments: the number of input ports, $%
+N$; a list giving the input ports making requests, $requestSet$; and
+the last successful input port in the previous arbitration. It
+returns either an
+indication that it cannot make a selection if the request set is empty ($%
+\mathsf{NORESULT}$); otherwise it returns the result of the round robin
+arbitration. A result is of a datatype defined as follows:
+
+$\mathtt{ROUNDTTYPE= NORESULT\ |\ RESULT\ int}$
+
+The function $\mathsf{RoundRobin}$ is called in $\mathsf{RoundRobinArbiter}$%
+. It tries successively higher values above the last successful request
+until it finds a proper request in the request set. It is defined in terms
+of a counter that ensures the that the function does terminate. Provided
+that the counter is initially set the value of the highest request possible
+and the request set is not empty, it will not terminate until a result is
+obtained.
+
+For instance, for an arbitrator of the $4\times 4$   switch fabric,
+the last successful input port number in the previous arbitration is
+0, and the current request set is [0,2,3], we call
+$\mathsf{RoundRobinArbiter}\ 4\ [0,2,3]\ 0$=$2$, which returns 2 as
+the result in the current round of arbitration.
+
+The function $\mathsf{RoundRobinArbiter}$ gives a good explanation
+on round-robin arbitration in mathematical notation in the sense
+that request and granted is represented by an integer and request
+set  an integer set. However this notation is far away from the
+structure of the arbiter shown in Figure \ref{fig:arbiter}. For
+instance, request sets are represented by a vector of inputs $req_0
+-req_3$ and the number of the  granted input port is encoded in a
+vector in Figure \ref{fig:arbiter}. We need give another
+specification which consider more details of hardware implementation
+of the arbiter.
+
+ \vspace{2mm}
+ {\footnotesize
+\begin{specification}
+$\mathtt{let\ RequestsToArbitrate\ 0\ reqVect=[]}$\\
+
+$\mathtt{/\backslash RequestsToArbitrate\ n\ reqVect=}$\\
+
+\>$\mathtt{ (reqVect\ !\ (n-1))=>}$\\
+
+\>$\mathtt{([n]\ union\ (RequestsToArbitrate\ (n-}1)\
+reqVect)$\\
+
+\>$\mathtt{  |RequestsToArbitrate\ (n-1)\ reqVect}$
+\end{specification}}
+
+The argument of $requestSet$ in the function
+$\mathsf{RoundRobinArbiter}$ is a list of integer numbers, however,
+the request set represented by the Boolean values of a request
+vector in the hardware implementation of the arbiter. Let $reqVect$
+be a Boolean vector with each bit indicating whether a corresponding
+input is making a request, $\mathsf{RequestsToArbitrate}$ returns
+the set of requests by scanning each bit in turn. If it holds the
+value $\mathsf{tt}$, then its position number is added to the
+request set. For instance, let
+$reqVect=[\mathsf{tt},\mathsf{ff},\mathsf{tt},\mathsf{tt}]$, then
+$\mathsf{RequestsToArbitrate}\ 4\ reqVect=[0,2,3]$. \vspace{2mm}
+{\footnotesize
+\begin{specification}
+$\mathtt{let\ SucessFulInput\ last\ reqVect=}$\\
+
+$\mathtt{\ \ (let\ requestSet=}$\\
+$\mathtt{\ \ RequestsToArbitrate\ (length\ req)\ reqVect\ in}$%
+\\
+
+$\mathtt{\ \ RoundRobinArbiter\ (length\ req)\ requestSet\ last}$\\
+
+\\
+
+$\mathtt{let\ GrantForOut\ reqVect\ grantVect=}$\\
+
+$\mathtt{\ \ let\ sucInp=SucessFulInput\ (BNVAL\ grantVect)\ reqVect\ in}$\\
+
+$\mathtt{\ \ (suc\_inp=NORESULT)=>grantVect}$\\
+
+$\mathtt{\ \ \ |(val\ (RESULT\ result=sucInp)\ in}$\\
+
+$\mathtt{\ \ \ \ \ VAL2VEC\ (length\ grantVect)\ result}))$
+\end{specification}}
+\vspace{2mm}
+
+ Giving a $grantVect$ indicating the value of the last
+successful input port in the previous arbitration, and $reqVect$ be
+a Boolean vector with each bit
+indicating whether a corresponding input is making a request, $\mathsf{%
+GrantForOut}\ reqVect \ grantVect$ first converts $grantVect$ to an integer,
+then calls $SucessFulInput$ to compute the the successful input, and
+converts the integer result to another Boolean vector, which encodes the
+result of this arbitration. For instance, let $reqVect=[\mathsf{tt},\mathsf{%
+ff},\mathsf{tt},\mathsf{tt}]$, $grantVect=[\mathsf{ff},\mathsf{ff}]$, then $%
+\mathsf{GrantForOut}\ reqVect \ grantVect=[\mathsf{tt},\mathsf{ff}]$.
+
+
+
+
+\section{STE Specification of One Round of the Round-Robin Arbitration}
+\label{sec:STESpecRoundRobin}
+ According to the above discussion, we
+can show the truth table of the round-robin arbitration function in
+Table \ref{truthTable},
+which is corresponding to one round of round-robin arbitration $\mathsf{%
+GrantForOut}\ req \ grant$. Here $req$ stands for a vector
+$req_0--req_1$, and $grant$ a vector of $xGrant,yGrant$. The
+returned result is another vector $xGant', yGrant'$. This is also
+the base of the implementation of the logics
+ of the arbitration.
+Among the %This function takes
+six arguments, $%
+req_0--req_3$ stand for four request inputs, and $xGrant, yGrant$ for the
+encoding of the granted request in the previous arbitration round. $%
+xGrant^{\prime}, yGrant^{\prime}$ are the outputs to indicate the
+encoding vector of the number of the granted ports. Here we omit the
+other inputs $frameStart$ and $routeEnable$ of the arbiter, which is
+not the main factors affecting the state space. This table is a
+typical use of the special value $\mathsf{X}$, which significantly
+reduces the size of the truth-table and the synthesis size of the
+logic of the arbiter.
+
+
+\begin{center}
+\begin{table}[tbp]
+\caption{Ternary-valued Truth Table of the Round-robin Arbiter}
+\label{truthTable}
+\begin{center}
+\begin{tabular}{llllllll}
+req0 & req1 & req2 & req3 & xGrant & yGrant & xGrant' & yGrant' \\
+$\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{ff}$ &
+$\mathsf{ff}$
+& $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{ff}$ \\
+$\mathsf{X}$ & $\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{X}$ &
+$\mathsf{ff}$ &
+$\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$ \\
+$\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{X}$ &
+$\mathsf{ff}$
+& $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{ff}$ \\
+$\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$ &
+$\mathsf{ff}$
+& $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{tt}$ \\
+$\mathsf{ff}$ & $\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{ff}$ &
+$\mathsf{ff}$
+& $\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{tt}$ \\
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{tt}$ & $\mathsf{X}$ &
+$\mathsf{ff}$ &
+$\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{ff}$ \\
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{tt}$ &
+$\mathsf{ff}$
+& $\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{tt}$ \\
+$\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{ff}$ &
+$\mathsf{ff}$
+& $\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{ff}$ \\
+$\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{X}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$
+& $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{ff}$ \\
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{tt}$ &
+$\mathsf{tt}$ &
+$\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{tt}$ \\
+$\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$
+& $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{ff}$ \\
+$\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$
+& $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$ \\
+$\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{X}$ &
+$\mathsf{tt}$
+& $\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{tt}$ \\
+$\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{X}$ &
+$\mathsf{tt}$ &
+$\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{ff}$ \\
+$\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{X}$ &
+$\mathsf{tt}$
+& $\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{tt}$ \\
+$\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{X}$ &
+$\mathsf{tt}$
+& $\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{ff}$%
+\end{tabular}%
+\end{center}
+\end{table}
+\end{center}
+
+Note that this truth-table is exhaustive, which explores all the cases of
+the input patterns. Here we briefly analyze why the truth-table is
+exhaustive. Note that we have to analyze all the possible boolean
+assignments for the nodes $xGrant, yGrant$, namely, $\mathsf{X}$ is not used
+to assign the value of the two nodes. $X$ value is mainly used for value
+assignments of the nodes $req_0--req_3$. For instance, when (a) $xGrant=%
+\mathsf{ff}$ and $yGrant=\mathsf{ff}$, then we have either (0) $req_1=%
+\mathsf{ff} \vee req_2=\mathsf{ff} \vee req_3=\mathsf{ff}$, or (1) $req_1=%
+\mathsf{tt}$, or (2) $req_2=\mathsf{tt}$, or (3)$req_3=\mathsf{tt}$. The
+four cases is corresponding to the first line to the fourth line in the
+table \ref{truthTable}, and also list all the possible cases when $xGrant=\mathsf{ff}$%
+, and $yGrant=\mathsf{ff}$. In case (0), the input value of $req_0$
+is not
+cared by us because the arbitration value of $xGrant^{\prime}$, and $%
+yGrant^{\prime}$ will be the same as $xGrant$, and $yGrant$ respectively in
+both input cases $req_0=\mathsf{ff}$ or $req_0=\mathsf{tt}$. In case (1), $%
+req_1$ is the highest priority request in the current round, and will be
+granted immediately once $req_1=\mathsf{tt}$. Therefore, the values
+assignments for the nodes $req_2$, and $req_3 $ are not cared by us. In case
+(2), $req_2$ is the highest priority request in the current round if $req_1=%
+\mathsf{ff}$, and will be granted immediately. Therefore, the values
+assignments for the nodes $req_3 $ are not cared by us. In case (3), $req_3$
+is the highest priority request in the current round if $req_1=\mathsf{ff}$
+and $req_2=\mathsf{ff}$, and will be granted immediately.
+
+Similarly, we can analyze the cases of the other boolean assignments for the
+nodes $xGrant, yGrant$. In fact each of the these cases is symmetric to the
+case (a) in some sense. For instance, the input assignments for nodes $%
+req_0--req_3$ can also be divided into four subcases in the case where $%
+xGrant=\mathsf{ff}$ and $yGrant=\mathsf{tt}$, each of which is
+corresponding to the counterpart one in the case (a) by shifting the
+input assignments for nodes $req_0--req_3$ by one bit in the right
+direction in Table \ref{truthTable}. At last, we analyze the
+complexity of the in the term of the number of
+requests $N$. The number of all the Boolean simulation cases is $2^N\times N$%
+, however that of the ternary valued simulation cases needed are only $N
+\times N$ with the help of the $\mathsf{X}$ value assignments. Notice that
+this is a substantial decrease at the exponential scale.
+
+According to the table \ref{truthTable}, we can easily write an STE
+assertion as follows: \vspace{2mm}
+\begin{specification}
+
+$\mathtt{constr_0=   \neg yGrantV\&\neg xGrantV\&\neg reqV_1\&\neg
+reqV_2\&\neg reqV_3  },$\\
+
+$\mathtt{constr_1=   \neg yGrantV\&\neg xGrantV\&reqV_1  ,}$\\
+
+$\mathtt{constr_2= \neg yGrantV\&\neg xGrantV\&\neg reqV_1\&reqV_2 ,}$\\
+
+$\mathtt{constr_3= \neg yGrantV\&\neg xGrantV\&\neg
+reqV_1\&\neg reqV_2\&reqV_3 ,}$\\
+
+
+$\mathtt{constr_4= yGrant\&\neg xGrantV\&\neg reqV_2\&\neg
+reqV_3\&\neg reqV_0 ,}$\\
+
+$\mathtt{ constr_5= yGrant\&\neg xGrantV\&reqV_2)  ,}$\\
+
+$\mathtt{constr_6= yGrant\&\neg xGrantV\&\neg reqV_2\&reqV_3,}$\\
+
+$\mathtt{constr_7= yGrant\&\neg xGrantV\&\neg reqV_2\&\neg
+reqV_3\&reqV_0,}$\\
+
+$\mathtt{constr_8= \neg yGrantV\&xGrant\&\neg reqV_1\&\neg
+reqV_3\&\neg
+reqV_0 ,}$\\
+
+$\mathtt{constr_9= \neg yGrantV\&xGrant\&reqV_3  ,}$\\
+
+$\mathtt{constr_{10}= \neg yGrantV\&xGrant\&\neg  reqV_3\&reqV_0 ,}$\\
+
+$\mathtt{constr_{11}= \neg yGrantV\&xGrant\&reqV_1\&\neg
+reqV_3\&\neg
+reqV_0 ,}$\\
+
+$\mathtt{constr_{12}= yGrant\&xGrant\&\neg reqV_1\&\neg reqV_2\&\neg
+reqV_0 ,}$\\
+
+$\mathtt{constr_{13}= yGrant\&xGrant\&reqV_0 ,}$\\
+
+$\mathtt{constr_{14}= yGrant\&xGrant\&reqV_1\&\neg reqV_0 ,}$\\
+
+$\mathtt{constr_{15}=yGrant\&xGrant\&\neg reqV_1\&reqV_2\&\neg reqV_0}$\\
+
+%\end{specification}
+
+%\begin{specification}
+
+$\mathtt{cons_0= When\ constr_0\ AndList [Is0\ xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_1=When\ constr_1\ AndList [Is0\
+xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_2=When\ constr_2\
+AndList [Is1\  xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_3= When\ constr_3\  AndList [Is1\  xGrant,Is1\  yGrant],}$\\
+
+
+$\mathtt{cons_4=When\ constr_4\
+AndList [Is0\  xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{ cons_5= When\ constr_5\  AndList [Is1\
+xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_6=When\ constr_6\
+AndList   [Is1\  xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_7=When\ constr_7\   AndList [Is0\  xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_8= When\ constr_8\  AndList [Is1\  xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_9= When\ constr_9\  AndList [Is1\
+xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_{10}=When\ constr_{10}\
+AndList [Is0\  xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{cons_{11}=When\ constr_{11}\  AndList [Is0\  xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_{12}=When\ constr_{12}\ AndList [Is1\  xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_{13}=When\ constr_{13}\ AndList [Is0\  xGrant,Is0\
+yGrant],}$\\
+
+$\mathtt{cons_{14}=When\ constr_{14}\  AndList
+[Is0\  xGrant,Is1\  yGrant],}$\\
+
+$\mathtt{cons_{15}=When\ constr_{15}\
+AndList [Is1\  xGrant,Is0\  yGrant],}$\\
+
+$\mathtt{ant=AndList [grant bvAre grantV,req bvAre reqV],}$\\
+
+$\mathtt{cons=Next\ AndList [cons_0,cons_1,...,cons_{15}],}$\\
+
+$\mathtt{assert=ant \leadsto cons}$\\
+
+
+
+\end{specification}
+
+
+
+Here the $grant$ is the vector of nodes  $[xGrant,yGrant]$, $grantV$
+the vector of symbolic values $[xGrantV,yGrantV]$, $req$ the vector
+of nodes  $[req_0,...,req_3]$, $reqV$ the vector of symbolic values
+$[reqV_0,...,reqV_3]$. In FORTE, a node is simply of type string.
+The antecedent $ant$ simply assigns symbolic values to the
+corresponding nodes. For instance, node $xGrant$ are assigned the
+symbolic value $xGrantV$. The consequent is a conjunction of
+trajectory formulae, each of which is a guarded formula of the form
+$\mathsf{When} \ constr_i \ cons_i$ and corresponding to each line
+of the truth table listed in Table \ref{truthTable}. The assertion
+$assert$ is an STE assertion which should be satisfied by one run
+arbitration of the $4 \times 4$ round-robin
+ arbiter. For such an STE assertion, we can directly run the tool
+ FORTE to verify it.
+
+\section{GSTE Specification of the sequential behaviors of the arbiter}
+\label{sec:GSTE}
+ In Table \ref{truthTable}, we only list the arbiter's
+behavior in one round. In fact, its behavior is a typically
+sequential, or reactive. It will accept the requests and make
+arbitration in each cycle.  The sequential behavior can be precisely
+captured by the following GSTE assertion graph in
+Fig.\ref{fig:arbiterGraph}.
+
+\begin{specification}
+$\mathtt{let\ rst = Is1 \  reset  ;}$\\
+
+$\mathtt{let\ nRst = Is0 \  reset ;}$\\
+
+$\mathtt{ let\ rtE=Is1 \  routeEnable ;}$\\
+
+$\mathtt{let\ trans\_0\_1 = AndList [nRst, rtE, Is1 \
+req1 ];}$\\
+
+$\mathtt{let\ trans\_0\_2 = AndList [nRst, rtE, Is0 \ req1 , Is1 \
+req2 ];}$\\
+
+$\mathtt{let\ trans\_0\_3 = AndList [nRst, rtE, Is0 \ req1 , Is0 \
+req2 , Is1 \
+req3 ];}$\\
+
+$\mathtt{let\ trans\_0\_0 = AndList [nRst, rtE, Is0 \ req1 , Is0 \
+req2 , Is0 \
+req3 ];}$\\
+
+$\mathtt{let\ trans\_1\_2 = AndList [nRst, rtE, Is1 \ req2 ];}$\\
+
+$\mathtt{let\ trans\_1\_3 = AndList [nRst, rtE, Is0 \ req2 , Is1 \
+req3 ];}$\\
+
+$\mathtt{let\ trans\_1\_0 = AndList [nRst, rtE, Is0 \ req2 , Is0 \
+req3 , Is1 \
+req0 ];}$\\
+
+$\mathtt{let\ trans\_1\_1 = AndList [nRst, rtE, Is0 \ req2 , Is0 \
+req3 , Is0 \
+req0 ];}$\\
+
+$\mathtt{let\ trans\_2\_3 = AndList [nRst, rtE, Is1 \ req3 ];}$\\
+
+$\mathtt{let\ trans\_2\_0 = AndList [nRst, rtE, Is0 \ req3 , Is1 \
+req0 ];}$\\
+
+$\mathtt{let\ trans\_2\_1 = AndList [nRst, rtE, Is0 \ req3 , Is0 \
+req0 , Is1 \
+req1  ];}$\\
+
+$\mathtt{let\ trans\_2\_2 = AndList [nRst, rtE, Is0 \ req3 , Is0 \
+req0 , Is0 \
+req1  ];}$\\
+
+$\mathtt{let\ trans\_3\_0 = AndList [nRst, rtE, Is1 \
+req0  ];}$\\
+
+$\mathtt{let\ trans\_3\_1 = AndList [nRst, rtE, Is0 \ req0 , Is1 \
+req1  ];}$\\
+
+$\mathtt{let\ trans\_3\_2 = AndList [nRst, rtE, Is0 \ req0 , Is0 \
+req1 , Is1 \
+req2  ];}$\\
+
+$\mathtt{let\ trans\_3\_3 = AndList [nRst, rtE, Is0 \ req0 , Is0 \
+req1 , Is0 \
+req2  ];}$\\
+ \end{specification}
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.5\textwidth]{ArbiterGraph.eps}
+\end{center}
+\caption{GSTE specification of the Arbiter} \label{fig:arbiterGraph}
+\end{figure}
+
+The edge from $init$ to $v_0$ stands for the reset action which sets
+the initial value of the register $xGrant, yGrant$ $\mathsf{ff}$
+respectively. The node $v_0$ is corresponding to the   state where
+$xGrant=0, yGrant=0$, the edge $(v_0, v_1)$ stands for the
+transition from state $v_0$ to $v_1$ where $xGrant=0, yGrant=1$. The
+antecedent of the transition is $req1H0$ which sets the inputs
+$routeEnable$ $req1$ $\mathsf{tt}$,  set $reset$\ $\mathsf{ff}$, and
+doesn't care the values of any other inputs. At state $v_0$, once
+the inputs $req1-req3$ are set $\mathsf{ff}$, the  state $xGrant=0,
+yGrant=0$ will hold. This is captured by the self-loop $(v_0,v_0)$
+whose antecedent is $req0H0$. Here we omit the consequents below
+each edge in the graph because they only specify the  values of
+nodes $xGrant,yGrant$ respectively. These values are implicitly
+indicated by the next states.
+
+Similarly, we can analyze the other states and transitions.
+
+
+\section{GSTE Specification of the response property of the arbiter}
+First we introduce a function $\mathsf{encode }\ i\ width$ which
+encodes an integer $i$ into a bit vector with length $width$. For
+instance, $\mathsf{encode }\ 2\ 2=[\mathsf{tt},\mathsf{ff}]$. Then
+we introduce another function $\mathsf{decode }\ \mathid{vect} \
+width$, which transforms a boolean $\mathid{vect}$ to an integer
+$i$, For instance, $\mathsf{decode }\ [\mathsf{tt},\mathsf{ff}]\
+ =2$.
+
+ For the $4\time 4$ round-robin arbiter, a running state of arbiter is
+ determined  by the state variable vector $grant$. Therefore we
+ specify
+ a state  by the decode number of value of the $grant$ vector $\mathsf{decode } \
+ grant\ 2$
+at the state in the following part of this subsection. For instance,
+If  the decode number of the value of arbiter is 2 at a state, then
+  $\mathsf{decode } \
+ grant\ 2=2$
+
+
+
+ In this part, we will introduce how to model the
+response property of the arbiter, which is a kind of liveness
+property. This property specifies that  once a request $req_i$ is
+set high and kept, then the request will be granted   after several
+cycle. There is also an upper bound of the latency to wait for the
+request to be granted. Before we
+ formally define the response property by GSTE assertion graphs, we give two examples to illustrate the response
+ property.
+
+
+\begin{example}
+Consider a state where the value of $grant$ is $[\mathsf{ff,tt}]$,
+which means that the last request granted is $req_{1}$, if the
+request $req_{3}$ is set high and kept, then the request will be
+granted (or the value of $grant$ is set $[\mathsf{tt,tt}]$) after at
+most $2$ cycles. Namely, the  upper bound of the latency to grant
+this request is $2$.
+\end{example}
+
+\begin{example}
+Consider a state where the value of $grant$ is $[\mathsf{tt,ff}$,
+which means that the last request granted is $req_{1}$, if the
+request $req_{2}$ is set high again and kept, then the request will
+be granted (or the value of $grant $ is set $[\mathsf{tt,ff}]$
+again) after at most $4$ cycles. Namely, the upper bound of the
+latency to grant this request is $4$.
+\end{example}
+
+We can formally model the two response properties in the two
+examples in two GSTE graphs, which are shown in Fig.
+\ref{figExample1} and \ref{figExample2}. Let us explain  the reason
+why the two assertion graphs can naturally specify the response
+properties.
+
+
+
+For a GSTE specification graph such as Fig. \ref{figExample1} and
+\ref{figExample2} for specifying the response property  that at a
+state where the $grant$
+ vector is set as $\mathsf{encode}\ s\ 2$ for some integer $s$ and the request $req_j$ is set and kept
+ until this request
+ $req_j$ is granted, there are four  specific features in the graph:
+
+\begin{description}
+\item[(1)] The first edge $(\mathid{start}, \mathid{vRst})$
+represents an action of reset, and the second edge
+$(\mathid{vRst},\mathid{vInit})$ sets the state of the arbiter to
+some initial value. For Fig. \ref{figExample1}, in order to set the
+initial value of state variable vector $grant$
+$[\mathsf{ff},\mathsf{tt}]$, we simply set the simulation constraint
+by setting the antecedent of edge $(\mathid{vRst},\mathid{vInit})$
+as $\mathsf{AndList}\ [nRst, trR,\mathsf{Is0}\ req_0, \mathsf{Is1}\
+req_1,\mathsf{Is0}\ req_2,\mathsf{Is0}\ req_3]$, which means that
+only request $req_1$ is set high and the others are set low. Thus
+the
+request  $req_1$ will be granted immediately, and the grant vector will be set $%
+[\mathsf{ff,tt}] $ accordingly.
+
+\item[(2)]There is a  node list $seq $ which
+represents the state
+ which may be reached from node $vInit$ by granting requests in a descending
+priority order.
+For any two indice $i,j$ such that $0\leq i,j\leq \mathsf{len}\ [vInit]@seq$ and $i<j$, there is an edge $(%
+seq_i,seq_j)$ whose antecedent must include a formula $\mathsf{Is1}\
+req_j$, which means that the request $req_j$ is kept high in the
+simulation constraint. The edge $(%
+seq_i,seq_j)$ represents a simulation step where a request
+$req_{seq_j}$ is granted from state node $seq_i$. In Fig.
+\ref{figExample1} and \ref{figExample2}, $seq$ is $[3]$ and
+$[3,0,1,2]$ respectively. In Fig. \ref{figExample1}, the edge
+$(vInit,3)$ represents a simulation step whose constraint is
+$AndList\ [\mathsf{Is0}\ req_2,\mathsf{Is1}\ req_3]$, while
+$(vInit,3)$   a simulation step whose constraint is $AndList\
+[\mathsf{Is1}\ req_2]$.
+
+
+
+
+\item[(3)] There is a terminal node $end$ which is the last element of the
+list $seq$. No edge starts from this terminal node. It is connected
+with any non-terminal node $v$ by an edge $(v,end)$ such that the
+consequent of the edge is $grant\ \mathsf{bvAre}\ grantV$ such that
+$\mathsf{decode}\ grantV \ 2=j$. This means that  the request
+$req_j$ is granted at last.
+
+\item[(4)]
+The edges starting from a non-terminal node should include all
+possible one simulation step patterns under the constraint
+$req_j=\mathsf{tt}$, That is to say, the simulation should
+exhaustively enumerate all possible input patterns under the
+constraint $req_j=\mathsf{tt}$. For instance, for the node $initV$
+in Fig. , $(vInit,2)$ and $(vInit,3)$ represent exhausitive
+ input patterns in one simulation step which starts from the state $initV$, as
+shown in Table \ref{tab1}. Similar to the case analysis in section
+\ref{}, the table enumerates  exhausitively all the cases  of the
+input patterns from the state $initV$ under the constraint
+$req_3=\mathsf{tt}$. A more complicated example is shown in Table
+\ref{tab2}, which stands for all possible
+
+\end{description}
+
+
+
+Although there are only two rows, Table \ref{tab1} lists all input
+patterns under the constraints $req_3=\mathsf{tt}$ and
+$grant=[\mathsf{ff},\mathsf{tt}]$. Under the two constraints, we
+only need care the value of the input $req_2$ because the values of
+$req_0$ and $req_1$ will not affect simulation.
+
+\begin{center}
+\begin{table}[tbp]
+\caption{Ternary-valued Truth Table of one step simulation cases
+from state $vInit$ under the constraint $req_3=\mathsf{tt}$}
+\label{tab1}
+\begin{center}
+\begin{tabular}{llllllll}
+req0 & req1 & req2 & req3 & xGrant & yGrant & xGrant' & yGrant' \\
+
+
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{tt}$ & $\mathsf{tt}$ &
+$\mathsf{ff}$ &
+$\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{ff}$ \\
+
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{ff}$ & $\mathsf{tt}$ &
+$\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{tt}$
+
+
+\end{tabular}%
+\end{center}
+\end{table}
+\end{center}
+
+\begin{center}
+\begin{table}[tbp]
+\caption{Ternary-valued Truth Table of one step simulation cases
+from state $vInit$ under the constraint $req_2=\mathsf{tt}$ in Fig.
+\ref{
+}} \label{tab2}
+\begin{center}
+\begin{tabular}{llllllll}
+req0 & req1 & req2 & req3 & xGrant & yGrant & xGrant' & yGrant' \\
+
+
+$\mathsf{X}$ & $\mathsf{X}$ & $\mathsf{tt}$ & $\mathsf{tt}$ &
+$\mathsf{tt}$ & $\mathsf{ff}$ &
+ $\mathsf{tt}$ & $\mathsf{tt}$ \\
+
+$\mathsf{tt}$ & $\mathsf{X}$ & $\mathsf{tt}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{ff}$\\
+
+$\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{tt}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$\\
+
+$\mathsf{ff}$ & $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{ff}$ &
+$\mathsf{tt}$ & $\mathsf{ff}$ & $\mathsf{tt}$ & $\mathsf{ff}$
+\end{tabular}%
+\end{center}
+\end{table}
+\end{center}
+
+Requirements (2)(3)(4) guranttee that for any simbolic sequence starting from $vInit$,
+ $\mathid{grant}$ vector will be changed into the decoding value of $j$ once the request
+$req_j$ is set and kept. The upper bound of the latency to grant the request $req_j$ is the lenth of
+the longest path from $vInit$ to $end$. Therefore, GSTE graphs such as Fig. \ref{figExample1} and
+\ref{figExample2}
+graphs accurately capture the meaning of the response property of the round-robin arbiter.
+
+Consider a state of the round-robin arbiter whose $\mathid{grant}$
+vector's decoding number is $i$ (or $\mathsf{decode}\ grant\ N=i$,
+and a request number $j$,
+
+ Given
+a state s=2, means (encode grant( 1 0))=2; and a request index j:
+{0,1,2,3};
+
+we define:
+
+    $ \mathsf{prePriorList}\ 1\ 2\ 4 =[1,2];$\\
+    $ \mathsf{prePriorList}\ 2\ 2\ 4=[3,4,5,6];$
+
+ define a request list in a
+descending priority order
+
+$\mathsf{priorList}\ 2\ 2\ 4)=[3,0,1,2]$;
+
+[vInit]@$\mathsf{priorList}\ s\ j\ N$ defines the $seq$ list which
+is introduced in previous section .
+
+Consider a list $L$ which is computed by the function
+$\mathsf{priorList}$, for any $0<i<j<\mathsf{len}\  L$; we define
+\vspace{2mm}
+ {\footnotesize
+\begin{specification}
+$\mathtt{let\ prePriorList\ s\ j\ N=}$\\
+     $\ \ \mathtt{(s + 1) \% N =j =>  [s+1]|}$\\
+    $\ \ \mathtt{ [s+1]@ (prePriorList\ (s +1)\ j\ N);}$\\
+    \\
+$\mathtt{let\ modMap\ N\ i= i\ \% N}$;\\
+\\
+
+
+$\mathtt{let\ priorList\ s\ j\ N= map\ (modMap\ N)} \
+(\mathtt{prePriorList\ s\ j\ N)}$\\
+
+$\mathtt{let\ constructIs0Ant\ L\ req=}$\\
+ $\mathtt{  let\ mapf\  k =
+ Is0\  (req !k )\ in}$\\
+ $\mathtt{  map\ mapf\ L}$\\
+\\
+$\mathtt{let \ ltransIJ\  i\ j\  N\ req=}$\\
+    $\ \ \mathtt{let\ ijList=(i + 1)\ upto \ (j - 1)\ in}$\\
+    $\ \ \mathtt{let\ is0Ants=constructIs0Ant\ ijList\   N\ req\ in}$\\
+ $\ \  \mathtt{AndList\ (is0Ants@[Is1\ (req ! (j \% N))])}$\\
+
+$\mathtt{consJ\  j\ N\ grant=}$\\
+    $\ \ \mathtt{  let\    jCode=decode\ j\ N\ in}$\\
+    $\ \  \mathtt{ let \   mapf\ i=(jcode!i=0) =>Is0\ (grant ! i)\ |\ Is1\ (grant !
+ i)}$\\
+$  \mathtt{\ \ in\ map\ mapf\ jCode}$
+
+
+\end{specification}}
+
+
+(ltransIJ i j N req) @ [Is1 req ! reqJ]  defines the antecedent of
+transition from node i to node j for instance, ltransIJ 2 6  4 req=
+    [Is0 (req! 3), Is0 (req!0), Is0 (req!1), Is1 (req!!2)];
+
+ltransIJ 2 3 4  req=[Is1 (req!3)];
+
+consJ 2 4 grant=[Is1 grant!1, Is0 grant!0];
+
+\section{Parameterized Verification Script of a $N \times N $ Round-Robin Arbiter}
+\label{sec:Verification}
+
+
+
+For a $N \times N$  round-robin arbiter, we can construct an
+corresponding STE assertion and a GSTE assertion correspondingly.
+Here we only introduce the GSTE assertion graph for a $N \times N$
+round-robin arbiter:
+
+ \vspace{2mm}
+ {\footnotesize
+\begin{specification}
+$\mathtt{let\ otherAntsL = [Is0\ "reset", Is1\ "routeEnable"];}$\\
+
+$\mathtt{let\ transIJ\ i\ 0\ width\ N =}$\\
+
+$\mathtt{\ \ (i,i,}$\\
+
+$\mathtt{\ \ AndList\ ((map\ Is0\ (req\ subtract\ [req !}i]))@otherAntsL),$\\
+
+
+$\mathtt{\ \ (grantOut\ bvAre\ (encode\ i\ width)))}$\\
+
+$\mathtt{/\TEXTsymbol{\backslash}\ transIJ\ i\ j\ width N=}$\\
+
+$\mathtt{\ \ let\ j'=(i+j)\% N\ in}$\\
+
+$\mathtt{\ \ let\ negReqs=1\ upto\ (j - 1)\ in}$\\
+
+$\mathtt{\ \ let\ negReqs=map\ (\TEXTsymbol{\backslash}k. (req ! ((
+k + i) \% N)))\ negReqs\ in}$\\
+
+$\mathtt{\ \ let\ ant=AndList\ (((map\ Is0\ negReqs)}$\\
+
+$\ \ \ \ \mathtt{union\ [Is1\ (req ! j')])@otherAntsL)\ in}$\\
+
+$\mathtt{\ \ let\ newLast=(encode\ i\ width\ )\ in}$\\
+
+$\mathtt{\ \ let\ cons=(grantOut\ bvAre\ newLast)\ in}$\\
+
+$\mathtt{\ \ (i,j' , ant , cons);}$\\
+
+$\mathtt{let\ transFromI\ WIDTH\ i =}$\\
+
+$\mathtt{\ \ let\ NUM\_PORTS=2**WIDTH\ in}$\\
+
+$\mathtt{\ \ map\ (\TEXTsymbol{\backslash}j. transIJ\ i\ j\
+WIDTH\ NUM\_PORTS)}$\\
+
+$\mathtt{ (0\ upto\ (NUM\_PORTS-1));}$\\
+
+
+$\mathtt{let\ transFrom\ WIDTH=}$\\
+
+$\mathtt{\ \ let\ NUM\_PORTS=2**WIDTH\ in}$\\
+
+$\mathtt{\ \ flat\ (map\ transFromI\ (0\ upto\ (NUM\_PORTS-1)));}$\\
+
+$\mathtt{let\ ag\ WIDTH=}$\\
+
+$\mathtt{\ \ let\ initEdge=(0,1,Is1 "reset")\ in}$\\
+
+$\mathtt{\ \ initEdge@}$\\
+
+$\mathtt{\ \ (map\ (\TEXTsymbol{\backslash}(from,to,ant,cons).}$\\
+
+$\mathtt{\ \ (from+1,to+1,ant,cons))\ transForm);}$\\
+\end{specification}}
+
+Here $\mathsf{transIJ}\ i\ j\ width\ N$ describes a state transition
+from state $i$ to $(i + j) \% N $, where $ N=2^{width}$ is the
+number of the input ports and $width$ is the width of the bit vector
+which is needed to encode
+ an input number. $\mathsf{transFromI}\ width\ i$ generates all the
+ edges starting from state $i$. The whole assertion graph is the
+ simply all the transition edges from each state $i$ in addition to the $init$
+ edge which is the reset transition. A GSTE specification on one
+ round-robin arbiter with $N \times N$ configuration size is
+ precisely captured by assertion graph $ag \ N$.
+
+
+\section{Experiments}\label{sec:experiments}
+
+We have done experiments to verify the aforementioned STE assertions
+and the assertion graphs for arbiters with varying number of
+requests. The detail experiment codes and data, such as VERILOG
+codes, BLIF codes of the arbiter circuits and verification scripts,
+can be referred in \cite{Li11ArbiterExperiments}.
+Table~\ref{steGsteExperiments} show the verification result for STE
+assertions for one round arbitration and GSTE assertion graphs for
+sequential behaviors of arbiters with different requests number $N$.
+
+\begin{table}
+\caption{Experiments}
+\label{steGsteExperiments}
+\begin{tabular}{||c||c|c||c|c||c|c||}
+\hline \hline
+\multicolumn{3}{||c||}{ARBITER} & \multicolumn{2}{|c||}{GSTE} & \multicolumn{2}{|c||}{STE} \\
+\hline
+N & $\sharp$lats & $\sharp$gates & time & mem & time & mem \\
+      & & & sec. & MB & sec. & MB \\
+\hline \hline
+8 & 3 & 280 & 0.1 & 12.3 & 0.02 & 8.2 \\
+16 & 4 & 1310 & 1.2 & 19.2 & 0.05 & 10.3 \\
+32 & 5 & 6180 & 34.2 & 50.5 & 0.34 & 20.8 \\
+64 & 6 & 28714 & 1217.9 & 361.3 & 4.43 & 73.0 \\
+\hline \hline
+\end{tabular}\\
+\end{table}
+% we can directly run GSTE model checking
+%tool to automatically verify it.
+
+\section{Conclusion}\label{sec:conclusion}
+
+The round-robin arbitration is a very important routing scheme which
+is extensively used in real-world network systems such as ATM or
+NOC. Despite its extensive application, few work has given a
+thoroughly formal verification for the hardware design of a
+round-robin arbiter. The difficulty lies in the the exhaustive
+simulation cases for one round arbitration in Boolean domain are
+$2^N\times N$ for a $ N\times N$ arbiter. It is not feasible to
+verify all the routing cases by using a Boolean domain model checker
+such as SMV. Our work is to fill the gap in the literature. Our
+approach is enhanced STE, which explores fully symbolic simulation
+for not only one round of round-robin arbitration, but also the
+sequential behaviors of the arbiter. Our experiments demonstrate
+that the enhanced STE specification for real-world hardware design
+can be finished automatically in a reasonable time and memory usage.
+
+\bibliographystyle{IEEEtran}
+\bibliography{gste,Isabelle}
+
+\end{document}
+                                                                                                                            L.ñ_«TëˇUÅ.ìandìKòuehlmann,õß∏A.ì(eds.),ò⁄ICCADŸ,ìpp.ì534{é°çë~r541.ë@ Aê£‹CM.é¶çççë  Ôcolor push  BlackëÄ [5]Ô  color popééë~rÔsrc:23gsteSymmetry4Computer.bblLi,ñ<fYë˛÷Õ.,ìHung,ìWëˇ,.,ìSong,ìX.,ìandõ    ÎZeng,ìN.ë Ï(2011)òExploringé°çë~rstructuralñg»symmetryìautomaticallyëg«inìsymbolicìtrajectoryé°çë~reï∆fvìaluation.ë   Sm⁄FëˇormalñÂ_MethodsìinìSystemìDesignìŸ,ëN∂ª?Ÿ,ëN∑1{27.é°çë~r10.1007/s10703-011-0119-z.é¶çççë  Ôcolor push  BlackëÄ [6]Ô  color popééë~rÔsrc:29gsteSymmetry4Computer.bblPï›vandeìyëˇjC,ñ@ M.ëÇèPhDìthesis.é¶çççë  Ôcolor push  BlackëÄ [7]Ô    color popééë~rÔsrc:33gsteSymmetry4Computer.bblDarbari,ëQ A.õ¥(2006)ñ¥ SymmetryìReductionòforìSTEë≥_Modelé°çë~rCheckingñIˆUsingëIıStructuredìModels.ë.LPhDëI±thesisìUniê∆fvê›versityé°çë~rofë@ Oxford.é¶çççë  Ôcolor push  BlackëÄ [8]Ô color popééë~rÔsrc:38gsteSymmetry4Computer.bblClarköËˆe,ñE.ë∫jM.,ìEnders,ìR.,ëFilkòorn,ìTëˇUÅ.,ìandñ∫iJha,ëS.ì(1996)é°çë~rExploitingñ`õsymmetryõ`úinìtemporalìlogicòmodelìchecking.é°çë~r⁄Fëˇorm.ñ@ MethodsìSyst.ìDes.Ÿ,ìª9Ÿ,ì77{104.éü!@çççë  Ôcolor push  BlackëÄ [9]Ô    color popééë~rÔsrc:43gsteSymmetry4Computer.bblIp,õÑ˝C.ñC˛N.ìandìDill,òD.ìL.ëC˝(1996)ìBetterìvê›vericationìthroughé°çë~rsymmetryëˇjC.ëÇè⁄Fëˇormalñ@ MethodsìinìSystemìDesignŸ,ìª9Ÿ,ì41{75.é¶çççë  Ôcolor push  Black[10]Ô   color popééë~rÔsrc:47gsteSymmetry4Computer.bblMcMillan,ë·K.ñ!ÇL.ì(2000)ìAë Çmethodologyë!ÅforìhardwêËˆareé°çë~rvê›vericationñ∏nusingìcompositionalë∏omodelìchecking.ë≈π⁄Sci

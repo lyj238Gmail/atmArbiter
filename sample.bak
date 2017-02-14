@@ -1,0 +1,205 @@
+
+\documentclass{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amssymb}
+
+%TCIDATA{OutputFilter=LATEX.DLL}
+%TCIDATA{Version=4.00.0.2312}
+%TCIDATA{Created=Thursday, May 10, 2012 10:51:29}
+%TCIDATA{LastRevised=Thursday, May 10, 2012 15:52:30}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+%TCIDATA{<META NAME="DocumentShell" CONTENT="Standard LaTeX\Blank - Standard LaTeX Article">}
+%TCIDATA{CSTFile=40 LaTeX article.cst}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\input{tcilatex}
+
+\begin{document}
+
+
+
+$\mathtt{constr\_0\_0=   \neg yGrantV\wedge \neg xGrantV\wedge \neg
+reqV_1\wedge \neg
+reqV_2\wedge \neg reqV_3  },$\\
+
+$\mathtt{constr\_0\_1=   \neg yGrantV\wedge \neg xGrantV\wedge reqV_1  ,}$\\
+
+$\mathtt{constr\_0\_2= \neg yGrantV\wedge \neg xGrantV\wedge \neg reqV_1\wedge reqV_2 ,}$\\
+
+$\mathtt{constr\_0\_3= \neg yGrantV\wedge \neg xGrantV\wedge \neg
+reqV_1\wedge \neg reqV_2\wedge reqV_3 ,}$\\
+
+
+$\mathtt{constr\_1\_1= yGrant\wedge \neg xGrantV\wedge \neg
+reqV_2\wedge \neg
+reqV_3\wedge \neg reqV_0 ,}$\\
+
+$\mathtt{ constr\_1\_2= yGrant\wedge \neg xGrantV\wedge reqV_2  ,}$\\
+
+$\mathtt{constr\_1\_3= yGrant\wedge \neg xGrantV\wedge \neg reqV_2\wedge reqV_3,}$\\
+
+$\mathtt{constr\_1\_0= yGrant\wedge \neg xGrantV\wedge \neg
+reqV_2\wedge \neg
+reqV_3\wedge reqV_0,}$\\
+
+$\mathtt{constr\_2\_2= \neg yGrantV\wedge xGrant\wedge \neg
+reqV_1\wedge \neg reqV_3\wedge \neg
+reqV_0 ,}$\\
+
+$\mathtt{constr\_2\_3= \neg yGrantV\wedge xGrant\wedge reqV_3  ,}$\\
+
+$\mathtt{constr\_2\_0= \neg yGrantV\wedge xGrant\wedge \neg  reqV_3\wedge reqV_0 ,}$\\
+
+$\mathtt{constr\_2\_1= \neg yGrantV\wedge xGrant\wedge reqV_1\wedge
+\neg reqV_3\wedge \neg
+reqV_0 ,}$\\
+
+$\mathtt{constr\_3\_3= yGrant\wedge xGrant\wedge \neg reqV_1\wedge
+\neg reqV_2\wedge \neg
+reqV_0 ,}$\\
+
+$\mathtt{constr\_3\_0= yGrant\wedge xGrant\wedge reqV_0 ,}$\\
+
+$\mathtt{constr\_3\_1= yGrant\wedge xGrant\wedge reqV_1\wedge \neg reqV_0 ,}$\\
+
+$\mathtt{constr\_3\_2=yGrant\wedge xGrant\wedge \neg reqV_1\wedge reqV_2\wedge \neg reqV_0}$\\
+
+%\end{specification}
+
+%\begin{specification}
+
+$\mathtt{constr\_0\_0}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge \lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime
+},$\newline
+
+$\mathtt{constr\_0\_1}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime }%
+\mathtt{,}$\newline
+
+$\mathtt{constr\_0\_2}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot xGrantV%
+\mathtt{\wedge \mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}%
+^{\prime },}$\newline
+
+$\mathtt{constr\_0\_3}^{\prime }\mathtt{=\lnot yGrantV\wedge \lnot
+xGrantV\wedge \mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\newline
+
+$\mathtt{constr\_1\_1}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime }\mathtt{,}$\newline
+
+$\mathtt{constr\_1\_2}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+\mathtt{\mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\newline
+
+$\mathtt{constr\_1\_3}^{\prime }\mathtt{=yGrantV\wedge \lnot xGrantV\wedge
+\mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_1\_0}^{\prime }\mathtt{=yGrant\wedge \lnot xGrantV\wedge
+\mathtt{\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$%
+\newline
+
+$\mathtt{constr\_2\_2}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{\mathtt{\lnot }yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$%
+\newline
+
+$\mathtt{constr\_2\_3}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_2\_0}^{\prime }\mathtt{=\lnot yGrantV\wedge xGrant\wedge
+\mathtt{\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$%
+\newline
+
+$\mathtt{constr\_2\_1}^{\prime }\mathtt{=\lnot yGrantV\wedge
+xGrant\wedge \mathtt{yGrantV}^{\prime }\mathtt{\wedge \lnot
+xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_3\_3}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+yGrantV}^{\prime }\mathtt{\wedge xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_3\_0}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+\lnot yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_3\_1}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+yGrantV}^{\prime }\mathtt{\wedge \lnot xGrantV}^{\prime },}$\newline
+
+$\mathtt{constr\_3\_2}^{\prime }\mathtt{=yGrant\wedge xGrant\wedge \mathtt{%
+\lnot yGrantV}^{\prime }\mathtt{\wedge xGrantV}_{0}^{\prime }}$\newline
+
+$\mathtt{ant_{0}=When\ constr\_0\_0}^{\prime }\mathtt{\ AndList[Is0\
+req1,Is0\ req2,Is0\ req3],}$\newline
+
+$\mathtt{ant_{1}=When\ constr\_0\_1}^{\prime }\mathtt{\ AndList[Is1\ req1],}$%
+\newline
+
+$\mathtt{ant_{2}=When\ constr\_0\_2}^{\prime }\mathtt{\ AndList[Is0\
+req1,Is1\ req2],}$\newline
+
+$ \mathtt{ant_{3}=When\ constr\_0\_3}^{\prime }\mathtt{\
+AndList[Is0\ req1,Is0\ req2,Is1\ req3],}$\newline
+
+$ \mathtt{ant_{4}=When\ constr\_1\_1}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req2,Is0\ req3],}$\newline
+
+$\mathtt{ant_{5}=When\ constr\_1\_2}^{\prime }\mathtt{\ AndList[Is1\ req2],}$%
+\newline
+
+$ \mathtt{ant_{6}=When\ constr\_1\_3}^{\prime }\mathtt{\
+AndList[Is0\ req2,Is1\ req3],}$\newline
+
+$ \mathtt{ant_{7}=When\ constr\_1\_0}^{\prime }\mathtt{\
+AndList[Is0\ req2,Is0\ req3,Is1\ req0],}$\newline
+
+$\mathtt{ant_{8}=When\ constr\_2\_2}^{\prime }\mathtt{\ AndList[Is0\
+req0,Is0\ req1,Is0\ req3],}$\newline
+
+$\mathtt{ant_{9}=When\ constr\_2\_3}^{\prime }\mathtt{\ AndList[Is1\ req3],}$%
+\newline
+
+$\mathtt{ant_{10}=When\ constr\_2\_0}^{\prime }\mathtt{\
+AndList[Is0\ req3,Is1\ req0],}$\newline
+
+$\mathtt{ant_{11}=When\ constr\_2\_1}^{\prime }\mathtt{\
+AndList[Is0\ req3,Is0\ req0,Is1\ req1],}$\newline
+
+$\mathtt{ant_{12}=When\ constr\_3\_3}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req1,Is0\ req2],}$\newline
+
+$\mathtt{ant_{13}=When\ constr\_3\_0}^{\prime }\mathtt{\
+AndList[Is1\ req0],} $\newline
+
+$\mathtt{ant_{14}=When\ constr\_3\_1}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is1\ req1],}$\newline
+
+$\mathtt{ant_{15}=When\ constr\_3\_2}^{\prime }\mathtt{\
+AndList[Is0\ req0,Is0\ req1,Is1\ req2],}$\newline
+
+$\mathtt{ant=AndList [ant_{0}],...,ant_{15}}$\newline
+
+$\mathtt{cons=\ Next \ (grant\ bvAre\ grantV'),}$\newline
+
+$\mathtt{assert=ant\leadsto cons}$\newline
+
+\bigskip
+
+\end{document}

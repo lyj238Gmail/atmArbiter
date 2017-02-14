@@ -1,0 +1,1345 @@
+
+\documentclass[10pt]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{times}
+\usepackage{latex8}
+\usepackage[dvips]{graphicx}
+\usepackage{lscape,moreverb,latexsym,graphics,makeidx}
+\usepackage{amsmath}
+\usepackage{color}
+\usepackage{isabelle}
+\usepackage{isabellesym}
+\usepackage{longtable}
+
+\setcounter{MaxMatrixCols}{10}
+%TCIDATA{OutputFilter=LATEX.DLL}
+%TCIDATA{Version=4.00.0.2312}
+%TCIDATA{LastRevised=Sunday, March 20, 2011 16:02:55}
+%TCIDATA{<META NAME="GraphicsSave" CONTENT="32">}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
+\newlength{\fminilength}
+\newsavebox{\fminibox}
+\newenvironment{fmini}[1][\linewidth]
+  {\setlength{\fminilength}{#1\fboxsep-2\fboxrule}   \vspace{2ex}\noindent\begin{lrbox}{\fminibox}\begin{minipage}{\fminilength}   \mbox{ }\hfill\vspace{-2.5ex}}  {\end{minipage}\end{lrbox}\vspace{1ex}\hspace{0ex}   \framebox{\usebox{\fminibox}}}
+\newenvironment{specification}
+{\noindent\tt\begin{fmini}\begin{tabbing}X\=X12345\=XXXX\=XXXX\=XXXX\=XXXX\=XXXX
+\=\+\kill} {\end{tabbing}\normalfont\end{fmini}}
+\input{tcilatex}
+
+\begin{document}
+
+\title{Combing Symmetry Reduction With General Symbolic Trajectory Evaluation%
+}
+\author{Naiju Zeng}
+\maketitle
+
+\section{Introduction}
+
+Symbolic trajectory evaluation (STE) is an efficient formal hardware
+verification method that has grown from the combination of multi-valued
+simulation and symbolic simulation \cite{CarFmBySymEvaOfPartTraj}. One of
+the main disadvantages of STE is that it can only deal with properties
+ranging over a finite number of time-steps. Generalised Symbolic Trajectory
+Evaluation (GSTE) is an extension of STE that can deal with properties
+ranging over unbounded time \cite{YangS03,yangTech,DBLP:conf/iccad/YangG02}.
+This extension is a double-edged sword. On one side, it enhances the
+expressiveness of STE by GSTE assertion graphes. GSTE assertion graphes can
+specify any $\omega $-regular properties. On the other side, the complexity
+of GSTE algorithms is also increased because fix-points computations are
+involved while STE do not need these computations.
+
+Symmetry reduction technique is very useful to reduce the complexity of
+verification when symmetries abound in the circuits under verification. For
+instance, data-dominated circuits such as memory modules intrinsically have
+plenty of structure symmetry. Symmetry reduction has been combined with STE
+in \cite{pandeyThesis,phdThesisODDarbi,DBLP:conf/iccad/YangG02}. However, no
+work has tried to combine GSTE with symmetry reduction. In this work, we try
+to bridge this gap in the literature. We try to design and implement a sound
+methodology of symmetry reduction in a context of GSTE. In this work, we
+focus on taking advantage of symmetry information to reduce the assertion
+graphes under verification into smaller ones. The symmetry information can
+either be obtained by type-checking or in-line checking the isomorphism of
+graph of netlists. How to obtain the structure symmetry is not cared by us
+in this paper.
+
+The main contributions of this paper are twofold. The first one is to
+develop a theoretical result of symmetry reduction in GSTE. Symmetry between
+two circuits and symmetry between assertion graphes are defined, and the
+correspondence between the two kinds of symmetry is formalized as a theorem.
+This result guarantees the soundness of our symmetry reduction method. The
+second is to introduce some empirical experiences to use the symmetry
+reduction effectively. By three examples, we show some kinds of structure
+symmetry are the most useful in the verification of data-dominated circuits
+like FIFOs, CAMs, and \textit{etc}.
+
+\subsection{Related work}
+
+There has been a lot of research papers on symmetry reduction method \cite%
+{ClarkeSymmetry,DillSymmetry,McMillanSymmetry,Sistla04Symmetry,Manku98structuralsymmetry, HungSym,pandeyThesis,phdThesisODDarbi}%
+. Among others, the work in \cite{pandeyThesis,phdThesisODDarbi} relates STE
+with symmetry reduction.
+
+Pandey's work is the earliest work which combines symmetry reduction and STE
+\cite{pandeyThesis}. Pandey uses sub-graph isomorphism based techniques to
+identify structural symmetries of transistor level netlist graph of memory
+circuits. Structural symmetry is formally defined on top of the next-state
+function. Detecting symmetry manually is the main obstacle to apply symmetry
+reduction, and the time spent on detecting symmetries accounted for most of
+the time used overall in reduction. As noticed in \cite{pandeyThesis}, "it
+is interesting to note that symmetry checks dominate much of the total time".
+
+%In \cite{Manku98structuralsymmetry}, the authors provided a
+%framework for identifying symmetries between Kripke structures, and
+%formalized the notion of structural symmetries in netlists, then
+%showed how netlists relate to those in Kripke structures and present
+%algorithms for identifying them.
+
+%Work in\ both \cite{pandeyThesis} and
+%\cite{Manku98structuralsymmetry} has used graph isomorphism
+%searching algorithm to find the symmetry existing in circuits, and
+%the cost of searching symmetry is expensive. The reason lies in that
+%they generalize the problem of searching symmetry in a netlist to
+%that of searching isomorphism in a graph, and they do not use other
+%hints to guide the search process. Graph isomorphism search usually
+%can be harder than evaluating assertions without symmetry reduction
+%at all. Therefore the cost of finding the symmetry in netlists
+%usually is rather expensive.
+
+Darbari proposed a symmetry reduction method for STE model checking using
+structured model \cite{phdThesisODDarbi}. However, he proposed a
+higher-level design language which allows to record symmetry of a circuit,
+and make a connection to the theory of STE logic. %This
+%connection is made by giving functions that derive a next-state
+%function from the structured models and proving lemmas that
+%guarantee that if the structured models have symmetry, then the
+%5corresponding derived next-state function will have
+%symmetry as well.
+In principle, his method is similar to those in \cite%
+{DillSymmetry,McMillanSymmetry}. They both propose augmentation of the
+language itself by introducing a new data type with syntactic constraints
+for sets of fully symmetry variables usually called scalarsets. Although
+this method is helpful for people to alleviate the burden of detecting
+symmetry, it is quite difficult to apply it in practice because popular
+hardware design languages such as VHDL, Verilog or System Verilog still do
+not support the type system to record symmetry.
+%If we have a circuit model compiled from these
+%design languages, it\ is difficult to use this symmetry reduction
+%method because there is no recording symmetry passed from high level
+%design.
+
+%Pandey used symbolic indexing techniques to verify CAMs, which is
+%regarded as a classical work in STE literature \cite{PandeySymCam}.
+%He reported a logarithmic reduction in the number of variables
+%required if the symbolic indexing encoding style is adopted. Darbari
+%took advantage of a type-checking approach for symmetry detection
+%based on a high-level HDL
+%description, where he used a richer type system to record the symmetry \cite%
+%{phdThesisODDarbi}. Using the symmetry type information, he combined
+%symmetry reduction with other decomposition rules. CAMs could be
+%verified using a fixed number of BDD variables since he only had to
+%verify one line at a time, and the other lines can be verified by
+%symmetry reduction. The amount of time used in verification is
+%linear with respect to the tag width, number of CAM lines and the
+%number of CAMs.
+
+Symbolic indexing is a core abstraction technique used in STE literature. It
+provides a mechanism to achieve partitioned data abstraction. The
+abstractions are indexed symbolically by Boolean variables, and formulas of
+Boolean logic are computed to represent the resulting families of reachable
+abstract state. The whole families of abstractions may be checked
+simultaneously in one STE run. However it is difficult for us to combine
+GSTE with symbolic indexing because it is difficult to find an indexing
+scheme in the fix-point iteration.
+%In CAMs study \cite{PandeySymCam}, a matching case is indexed
+%by a Boolean expression of index symbolic variables, and in this
+%matching case only variables for the content of the indexed
+%data-entry and tag-entry are created, instead of variables for all
+%tag- and data-entries. That is to say, values of non-indexed
+%data-entries and tag-entries are abstracted into $\mathsf{X}$.
+%Usually a user manually create the right abstraction using symbolic
+%indexing. Recently, Adams \textit{et al.} proposed an automatic
+%abstraction technique that
+%automatically finds a proper way to apply symbolic indexing with STE \cite%
+%{Sara07}.
+
+Previously people have tried to introduce formal reasoning mechanisms with
+GSTE. Alan Hu \textit{et al.} introduced how to convert assertion graphes
+into monitor circuits, and also implemented the related assertion graph
+implication based on the generation of monitor circuits \cite%
+{DBLP:conf/charme/HuCY03,DBLP:conf/iccad/HuCY03}. Authors proposed the
+theory of language-based and model-based assertion graph implications in
+\cite{DBLP:conf/aspdac/YangYHS05}. In our work, the rules used to decompose
+the assertion graphes is similar to language-based rules on graph
+implications in \cite{DBLP:conf/aspdac/YangYHS05}. Symmetry between some
+decomposed smaller assertion graphes \textit{w.r.t.} the circuit under
+verification is exploited, and a representative property from the
+equivalence class is verified in the GSTE simulator, and the others are
+solved by symmetry reduction.
+
+To the best of our knowledge, no one has tried to combine symmetry reduction
+with GSTE until now. In fact, because the symmetries abound in the circuits
+under data-dominated circuits, symmetry reduction is an effective approach
+which can help us decrease the complexity of verification in the GSTE
+context.
+
+%Difference between our approach and  Darbari's lies in three
+%aspects: (1) ours is aimed to a netlist model without symmetry
+%5information recorded externally, and therefore needs automatically
+%detect the symmetry on line, while his approach is aimed to a
+%netlist model compiled from a function program language which
+%records symmetry, and identifies symmetry by type-checking; (2) ours
+%does decomposition and symmetry reduction in a light-weight theorem
+%prover which is implemented in FORTE, and calls STE as a special
+%tactic; while Darbari does these  tasks in the HOL theorem prover,
+%and runs STE in HOL by transforming a circuit EXLIF format into a
+%simulatable model in HOL; (3) proof control structures, each of
+%which is called a tactical, is used to compose proof tactics. A
+%tactical
+% is formally a higher-order functor operating on tactics. Properly
+%using tactical makes proof as automatically as possible, and
+%alleviates the burden of people's interaction with the theorem
+%prover.
+
+\paragraph*{Presentation of the paper\ \ \ }
+
+In this work we use a notation in function programming style to illustrate
+both our theory and implementation. Lemmas about lists, sets, etc., are
+polymorphic, and a function is usually defined in a curried form instead of
+a tupled form, that is, we often use the notation $f~x~y$ to stand for $%
+f(x,y)$. The advantage of a curried function is to allow a partial function
+application~\cite{Pau96}. We use the notation $\isasymlbrakk %
+A_{1};A_{2};...;A_{n}\isasymrbrakk\Longrightarrow B$ to mean that with
+assumptions $A_{1},\ldots ,A_{n}$, we can derive a conclusion $B$. Namely $%
+\Longrightarrow $ is the implication operator in our meta-logics. For a pair
+$(a,b)$, $\mathsf{fst\ }(a,b)\equiv a$ and $\mathsf{snd\ }(a,b)\equiv b$. We
+write $x:xs$ for the list that extends $xs$ by adding $x$ to the front of $%
+xs $, $\left[ x_{1},..x_{n}\right] $ for a list $x_{1}:..x_{n}:[]$, $xs@ys$
+for the result list by concatenating $xs$ with $ys $, $0\ \mathsf{upto}\ i$
+for the list $[0,...,i-1]$, $xs!i$ for the $i^{th}$ element of the list $xs$
+(counting from 0 as the first element), $\mathsf{set}~xs$ for the set of all
+the elements in $xs$, $x\ \mathsf{mem}\ ls$ for $x\in (\mathsf{set}\ ls),$ $%
+\mathsf{length}~xs$ for the length of the list $xs,$ $\mathsf{last}~xs$ for
+the last element of the list $xs,$ and $xs\cup _{L}ys$ for the union of
+elements of two lists$.$ Function $\mathsf{itlist\ }f\mathsf{\ }slist\mathsf{%
+\ }base$ returns: $f\ (slist!0)\ (f$ $(slist!1)\ (...(f\ (last\ slist)\
+base))),$ $\mathsf{zip\ }xs\mathsf{\ }ys$ zips two lists $xs$ and $ys$
+together to generate a list of pairs$,$ $\mathsf{map\ }f\mathsf{\ }xs$
+applies $f$ to each element in $xs$. Boolean expression type is written as $%
+\mathsf{bool},$ which may be constructed as follows: $\mathsf{T}$, $\mathsf{F%
+}$, $\mathsf{variable\ string}$ and $\mathsf{AND(\wedge )}$, $\mathsf{%
+OR(\vee )}$, $\mathsf{NOT(\lnot )}$, $\mathsf{IMPLY(\longrightarrow ),}$ $%
+\mathsf{XNOR}$, and $\mathsf{XOR}$. Here we add a "b" before these
+constructors because we want to use it to distinguish them with the
+counterparts in the four valued lattice domain, which we will introduce in
+the next section.
+
+The remainder of this paper is organized as follows: %Section \ref%
+%{Isabelle:introduction} briefly introduces the Isabelle notations used in
+%this paper.
+Section~\ref{sec:background} introduces preliminary theory of GSTE syntax
+and semantics . Section~\ref{sec:symmetry reduction} formally introduces our
+theorems on symmetry reduction. Section~\ref{sec:caseStudy} uses the
+verification problem of CAMs to illustrate the problem which is solved by
+symmetry reduction. Section~\ref{sec:conclusion} concludes the paper.
+
+\section{Background}
+
+\subsection{The Four Valued Lattice}
+
+\label{The four valued lattice}
+
+Four values $\mathsf{ff}$, $\mathsf{tt},$ $\mathsf{X}$, and $\mathsf{\top }$
+are used in STE simulation \cite{CarFmBySymEvaOfPartTraj}. $\mathsf{ff}$ and
+$\mathsf{tt}$ are standard binary values false and true. The third value $%
+\mathsf{X}$ stands for an unknown value, while the fourth value $\top $ a
+clash value. Formally, we define $\mathbb{V}$$=_{df}\left\{ \mathsf{ff},%
+\mathsf{tt},\mathsf{X},\mathsf{\top }\right\} $
+
+It is natural to introduce a truth information ordering $\sqsubseteq $ on $%
+\mathbb{V}$ as follows: %. The unknown value X contains no truth
+%information; the mutually incommensurable values $\mathsf{ff}$ and
+%$\mathsf{tt}$ contain sufficient information to determine truth
+%exactly, and the top value $\top $ contains inconsistent truth
+%information. Therefore, we define:
+$\mathsf{X}\sqsubseteq \mathsf{ff},$ $\mathsf{X}\sqsubseteq \mathsf{tt},$
+while $\mathsf{ff}$ and $\mathsf{tt}$ are incomparable, $\mathsf{ff}%
+\sqsubseteq \top $, and $\mathsf{tt}\sqsubseteq \top $. Namely, the unknown
+value $\mathsf{X}$ contains no truth information; the mutually
+incommensurable values $\mathsf{ff}$ and $\mathsf{tt}$ contain sufficient
+information to determine truth exactly, and the top value $\top $ contains
+inconsistent truth information. In FORTE, $\mathbb{V}$ is implemented by a
+type boolPairs. Namely, a pair of Boolean values is used to implement a
+value in $\mathbb{V}$. We can easily see that $\mathbb{V}$ with the ordering
+relation $\sqsubseteq $ forms a lattice. We can introduce a least-upper
+bound operator $\sqcup $ with respect to the ordering $\sqsubseteq .$ Its
+rather routine to check that $a\sqsubseteq b$ if and only if $a\sqcup b$ $%
+=b. $ We can naturally define operators on $\mathbb{V}$ such as negation $%
+\mathsf{NOT_{4}}(\lnot _{4})$, conjunction $\mathsf{AND_{4}}(\wedge _{4})$,
+disjunction $\mathsf{OR_{4}}(\vee _{4}),$ implication $(\rightarrow _{4})$
+and so on. See \cite{CarFmBySymEvaOfPartTraj} for details.
+
+\subsection{A Formal Model of Circuit}
+
+A circuit is modelled by a netlist, which is a set of nodes (or wires)
+connected by logical entities such as gates and one-phase delays. Gates
+describe combinational logics deciding the relationship between values of
+nodes. Delays refer to all sequential elements which can keep "state".
+
+Here we use a type $\mathtt{node}$ to represent type of nodes. A circuit
+state is an instantaneous snapshot of a circuit behavior given by an
+assignment of lattice values to nodes of the circuit. Therefore, type $%
+\mathtt{state}\mathtt{=node}\ \Rightarrow \mathtt{boolPairs}$ is defined. A
+state sequence assigns a state to a time point. Here we still use $\mathsf{%
+nat}$ to define the type $\mathsf{time}$. Thus, we define $\mathtt{%
+stateSeq=time}\Rightarrow \mathtt{state}$.
+
+Here we adopt the proposal in \cite{DBLP:conf/csr/RoordaC06,Li09}
+for the state transition function of a circuit. This state
+transition function defines not only the information propagation
+forwards from one time point to next time point, but also those
+occurring instantaneously through the combinational parts in a time
+point.
+For each circuit $c$, we can induce a next state functor operator $Y::%
+\mathtt{stateSeq\Rightarrow stateSeq}$ such that $Y\ \ $is a closure
+function. Roughly speaking, the words "a closure function $Y\ \ $" means
+that applying $Y\ \ $once can derive a closure of information in some form.
+%For instance, $\mathsf{fclosure%
+%}\ nl\ s$ is a closure of information on the result simulation state of a
+%circuit $nl$ at the driving state $s$.
+In detail, (1) $Y\ \ $ is \emph{monotonic}, $Y\ \ x\sqsubseteq Y\ \ y$ if $%
+x\sqsubseteq y%\footnote{%
+%Here the relation $\leq $ is some kind of partial order. In lattice domain, $%
+%\sqsubseteq $ is a partial order.}
+.$ (2) $Y\ \ $is \emph{idempotent}: $Y\ \ x=Y\ \ \left( Y\ \ x\right) $; (3)
+$Y\ \ $is \emph{extensive}: $x\sqsubseteq Y\ \ x$. See \cite{Li09} for
+detailed account. %In STE, a circuit model $M:\mathtt{state\Rightarrow
+%state}$ are represented by a next-state function from state to state. This
+$Y$ is also known as an excitation function, which is constructed on-the-fly
+during simulation, from the netlist description of the circuit.
+
+%%add
+Figure \ref{fig:memory} shows a netlist of 2-cell single-bit memory, which
+is modified from a GSTE tutorial \cite{DBLP:conf/atva/Yang06}.
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.9\textwidth]{memory.eps}
+\end{center}
+\caption{2-cell single-bit memory}
+\label{fig:memory}
+\end{figure}
+%The excitation function $Y$ is as follows:
+
+%$Y\ s\ m_{0}=((s\ wr\wedge _{4}\lnot _{4}s\ a)\rightarrow _{4}s\ din)\wedge
+%_{4}((\lnot _{4}s\ wr\vee _{4}s\ a)\rightarrow _{4}s\ m_{0})$
+
+%$Y\ s\ m_{1}:((s\ wr\wedge _{4}s\ a)\rightarrow _{4}s\ din)\&((\lnot _{4}s\
+%wr\vee _{4}\lnot _{4}s\ a)\rightarrow _{4}s\ m_{1})$
+
+Suppose that $sq$ is state sequence such that $sq\ 0$
+$a=\mathsf{tt},$ $sq\ 0\ wr=\mathsf{tt},$ $sq\ 0\ din=\mathsf{tt},$
+and $sq\ 0\ n=\mathsf{X}$ for any other nodes $n$, and $sq\ 1$
+$wr=\mathsf{ff},$ $sq\ 1\ n=\mathsf{X}$ for any other nodes $n$, a
+simulation for the circuit in Figure \ref{fig:memory} is started,
+then the result state sequence $Y$ $sq$ after simulation satisfies
+that $Y$ $sq\ 0\ n=sq\ 0\ n$ if $n\in \{wr,a,din,m_{0},m_{1},out\},$
+$Y$ $sq\ 0\ sel_{0}=\mathsf{ff},$ $Y$ $sq\ 0\
+sel_{1}=\mathsf{tt}.$ At the second point, $Y$ $sq\ 1\ m_{1}=\mathsf{tt,}$ $%
+Y $ $sq\ 1\ n=sq\ 1\ n$ for any other nodes $n.$
+
+\subsection{Instantaneous Trajectory Evaluation Logic}
+
+Each edge is labelled with a pair $A/C$ in an assertion graph, here $A$ is
+called the antecedent and $C$ is called the consequent. Just like in STE,
+the antecedent represents assumptions on stimulus of the inputs of a
+circuit, and the consequent represents requirements on the outputs after the
+symbolic simulation of the circuit. In this work, we are mainly concerns on
+the GSTE forwards semantics.
+
+Both $A$ and $C$ are, like in STE, formulas in trajectory evaluation logic
+(TEL). However, as each edge represents the state of a single time-point,
+the next-time operator are not needed. We call the subset of TEL in which no
+next-time operators occur Instantaneous Trajectory Evaluation Logic (ITEL).
+In order to formalize the syntax of Instantaneous trajectory formulas, we
+introduce a datatype $\mathsf{instForm}$ as follows:
+\begin{equation*}
+\left.
+\begin{array}{l}
+\mathtt{datatype\ instForm=Is1\ node\ |Is0\ node|chaos}\  \\
+\ \ \ \mathtt{|When\ bool\ instForm\ }\ \  \\
+\ \ \ \ \mathtt{|AndList\ (instForm\ list)}\ \ \
+\end{array}%
+\right.
+\end{equation*}%
+For convenience in reasoning, we introduce a novel formula \textsf{chaos} in
+our theory to represent that the values of all the nodes are unknown at a
+state. We also use the following notation: $n\ \mathsf{isb}\ v\equiv \mathsf{%
+AndList\ [When\ }v\ (\mathsf{Is1}\ n),[\mathsf{When\ \lnot }v\ (\mathsf{Is0}%
+\ n)],$ which specifies a symbolic value $v$ to a node $n\ .$
+
+Remark parametric representation In the STE/GSTE area, a boolean function
+vector for nodes is used to represent a state for a circuit model, and this
+is corresponding to characterization notation for a state. For instance, It
+is Instantaneous trajectory formulas is convenient for us
+
+The semantics of trajectory formulas is formally defined as a primary
+recursion function \textsf{valid} on datatype $\mathtt{instForm}$.%
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{valid::state\Rightarrow instForm\Rightarrow bool\ }$ \\
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \mathtt{((\_\vDash \ \_)}\ \mathtt{[80,80]80)}$
+\\
+$\mathtt{primrec}$ \\
+$\mathtt{st}\vDash (\mathtt{Is1\mathtt{\ }n)=tt\sqsubseteq (st\mathtt{\ \ }%
+n)\ \ \ }$ \\
+$\mathtt{st}\vDash \mathtt{(Is0\mathtt{\ }n)=ff\sqsubseteq (st\mathtt{\ \ }n)%
+}$ \\
+$\mathtt{st}\vDash \mathtt{chaos=True\ \ \ \ \ \ \ \ \ \ \ }$ \\
+$\mathtt{sq}\vDash \mathtt{AndList\ (tfList)=\forall tf.tf\ mem}\ \mathtt{%
+tfList\longrightarrow (sq}\vDash \mathtt{\ tf)\ }$ \\
+$\mathtt{st}\vDash \mathtt{(When\mathtt{\ }P\mathtt{\ }A)=(P}\longrightarrow
+\mathtt{st}\vDash \mathtt{A)\ \ \ }$%
+\end{tabular}%
+\end{equation*}
+
+where notation $\mathtt{((\_\vDash \ \_)}\ \mathtt{[80,80]80)}$ stands for
+an infix notation\texttt{\ }$\vDash $ for function $\mathtt{valid}$.
+
+Next we define the predicate instantaneous trajectory formula implication.
+
+\begin{definition}
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{trajImp::trajForm\Rightarrow trajForm}\Rightarrow \mathtt{bool}\ \
+\mathtt{((\_\leadsto \ \_)}\ \mathtt{[80,80]80)}$ \\
+$\mathtt{(A}\leadsto \mathtt{C)\equiv }\forall s\mathtt{.(}s\models \mathtt{A%
+}\longrightarrow s\models \mathtt{C))}$%
+\end{tabular}%
+\end{equation*}
+\end{definition}
+
+The $\mathsf{trajImp}$ relation satisfies the reflexivity and transitivity .
+
+\begin{lemma}[refl]
+$A\Longrightarrow A$
+\end{lemma}
+
+\begin{lemma}[trans]
+$\isasymlbrakk A\rightsquigarrow B;B\rightsquigarrow C\isasymrbrakk%
+\Longrightarrow A\rightsquigarrow C$
+\end{lemma}
+
+If each consequent $B_{i}$ can be implied by the antecedent $A$, then the
+conjunction $\mathsf{AndList\ }[B_{1},...,B_{n}]$ can be implied by $A$.
+
+\begin{lemma}[conjI]
+\begin{equation*}
+\left. \isasymlbrakk(A\leadsto B_{1});...,(A\leadsto B_{n})\isasymrbrakk%
+\Longrightarrow (A\leadsto \mathsf{AndList\ }[B_{1},...,B_{n}])\right.
+\end{equation*}
+\end{lemma}
+
+Combine rules Refl and conjI, we can easily derive the following law.
+
+\begin{lemma}[repList]
+\begin{equation*}
+\left. \isasymlbrakk\forall e.e\ \mathsf{mem\ }AL\rightarrow e=A\isasymrbrakk%
+\Longrightarrow A\leadsto \mathsf{AndList\ }AL\right.
+\end{equation*}
+\end{lemma}
+
+\subsection{Syntax of an Assertion Graph}
+
+In GSTE, specification on cicuits are given by assertion graphes, which are $%
+\forall$-automaton. Figure \ref{fig:memoryGsteGraph} shows an assertion
+graph for the netlist in figure \ref{fig:memory}.
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.9\textwidth]{memoryGraph.eps}
+\end{center}
+\caption{GSTE assertion graph for memory cell}
+\label{fig:memoryGsteGraph}
+\end{figure}
+
+where $write=\mathsf{AndList}[\mathsf{Is1}\ wr,din\ \mathsf{isB}\ bD,a\
+\mathsf{isB}\ bA]$, $retain=\mathsf{AndList}[wr\ \mathsf{isB}\ bWr$, $a\
+\mathsf{isB}\ (bWr\rightarrow \lnot \ bA)]$, $read=\mathsf{AndList}[\mathsf{%
+Is0}\ wr,a\ \mathsf{isB}\ A],$ $outResult=dout\ \mathsf{isB}\ bD$. The
+antecedent $retain$ needs a little explanation: it means that either the $wr$
+signal is negative or the value of the address $a$ is not the previous
+written address value $bA$. This specification means that once a data is
+wirtten into a memory cell, this data is retained for a finite number of
+cycles, and then the data will be output if the read and address signal \ is
+given.
+
+After giving an intuition on a GSTE graph, now we define an assertion graph
+formally.
+
+$%
+\begin{tabular}{l}
+$\mathtt{types}$ \\
+$\mathtt{vertex=nat}$ \\
+$\mathtt{edge=}\mathtt{vertex\times vertex}$ \\
+$\mathtt{edge2Form=}$$\mathtt{edge}\Rightarrow \mathtt{instForm}$ \\
+$\mathtt{graph=vertex\ set\times vertex\times edge\ set\times
+edge2Form\times edge2Form}$%
+\end{tabular}%
+$
+
+We use a natural number to represent a vertex, and a pair of vertex an edge
+in an assrtion graph. A mapping from an edge to an instantaneous formula is
+formalized by a type $\mathsf{edge2Form}\mathtt{.}$ An assertion graph is a
+five-tuple $G=(V,init,E,ant,cons)$. Here, $V$ is a set of vertices
+containing a vertex $init$ which is called the initial vertex, $E$ is a set
+of edges between the vertices. Finally, $ant,cons:\mathtt{edge2Form}$ are
+functions from edges to formulas in $\mathtt{instForm}$. $ant$ $e$ is the
+antecedent of $e$, $cons$ $e$ the consequent of $e$. For $G$, we define $%
+\mathsf{initOf}\ G\equiv init$; $\mathsf{edgeOf}\ G\equiv E$; $\mathsf{antOf}%
+\ G\equiv ant$; $\mathsf{consOf}\ G\equiv cons$.
+
+Next we define the type of $\mathsf{path}$, which is a list of vertexes. The
+predicate $\mathsf{isPathOf}\ p\ g$ says that $p\ $is a path of $g,$ and%
+\textsf{\ }$\mathsf{pathOf}\ g$ defines the set of all paths in $g$.
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{path=}\mathtt{vertex\ list}\ \ \ \ \ \ \ \ \ \ \ \ $ \\
+$\mathtt{isPathOf::path\Rightarrow graph\Rightarrow bool}$ \\
+$\mathtt{isPathOf\mathtt{\ p\ g=p}}_{\mathtt{\mathtt{0}}} \mathtt{=initOf}
+\mathtt{\ g\wedge \forall 0\leq i<(len\mathtt{\ p)-1.(p}}_{\mathtt{\mathtt{i}%
+}}\mathtt{\mathtt{,p}}_{\mathtt{\mathtt{i+1}}}\mathtt{\mathtt{)\in }}$$%
+\mathtt{edgeOf} \mathtt{\ g\wedge 1<len\mathtt{\ p}}$ \\
+$\mathtt{pathOf::graph\Rightarrow path\ set\ }$ \\
+$\mathtt{pathOf\mathtt{\ g=\{p.}isPathOf\mathtt{\ p\ g\}}}$%
+\end{tabular}%
+\end{equation*}
+
+\subsection{Semantics of an Assertion Graph}
+
+Now we can define the semantics of an assertion graph. A state sequence $sq$
+satisfies a path $p$ under an interpretation $f:$ $\mathtt{edge2Form}$ if
+and only if the length of $sq$ is equal to that of $p,$ and $sq_{i}$ \
+satisfies the instantaneous formula $f\ (p_{i},p_{i+1})$ . \ A circuit $M$
+satisfies an assertion graph, written $\mathsf{cktSat}\mathtt{\ }M\ g,$ if
+for every trajectory $\tau $ of $M$, every path $p$ of $g$, the fact that $%
+\tau $ satisfies $p$ under $\mathsf{antOf}\ g$ implies that $\tau $
+satisfies $p$ under $\mathsf{consOf}\ g.$
+
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{sqValid::stateSeq\Rightarrow \mathtt{vertex\ list}\ \Rightarrow
+edge2Form\Rightarrow bool\ \ \ \ \ \ \ \ \ }$ \\
+$\mathtt{sqValid}\ \mathtt{sq\ p\ f\equiv (len\mathtt{\ sq)=}(len\mathtt{\ p)%
+}\wedge \forall 0\leq i<(len\mathtt{\ p)-1.}sq}_{\mathtt{i}}\vDash \mathtt{(f%
+\mathtt{\ \mathtt{\mathtt{(p}}_{\mathtt{\mathtt{i}}}\mathtt{\mathtt{,p}}_{%
+\mathtt{\mathtt{i+1}}}\mathtt{\mathtt{)}})}}$ \\
+$\mathtt{cktSat}::\mathtt{(state\Rightarrow state)\Rightarrow
+graph\Rightarrow bool\ \ \ }$ \\
+$\mathtt{cktSat} \mathtt{\ M\ g\equiv }$ $\mathtt{\forall p\in pathOf\mathtt{%
+\ g.}\forall tr\in trajOf\ M.}\mathtt{sqValid}\ \mathtt{sq\ p\ (antOf\mathtt{%
+\ g)}}$ $\longrightarrow \mathtt{sqValid}\ \mathtt{sq\ p\ (consOf\mathtt{\ g)%
+}}$%
+\end{tabular}%
+\end{equation*}
+
+Usually, a GSTE assertion graph is a specification of only a part of
+a circuit. This part itself can be viewed as a circuit. The
+antecedents in the graph may assign values to some internal nodes of
+the circuit. For instance, the following assertion graph in Fig.
+\ref{} is only concerned on the subnetlist which is shown in Fig.
+\ref{}.
+
+In default, our GSTE model checking is based on-forwards semantics,
+therefore, only the subnetlist, which are driven by the nodes specified by
+the antecedents of the graph, will be used as the circuit model in the model
+checking. The internal nodes will be seen as inputs of the subcircuit. In
+the above example, logics that drive nodes $sel_{0}$ and $sel_{1}$ are
+neglected. The next state function will be used as the circuit model to do
+GSTE model check the graph specified in Fig. \ref{}, which is corresponding
+to the subnetlist, which is shown in Fig. \ref{}.
+
+\section{Algebraic Laws}
+
+Next predicate $\mathsf{isSameTopl}$ defines that two assertion
+graphes have the same topological structure.
+
+$\mathsf{isSameTopl\ }g\mathsf{\ }h\equiv vertexOf\ g=vertexOf\ h\wedge
+initOf\ g=initOf\ h\wedge edgeOf\ g=edgeOf\ h$
+
+\begin{lemma}[graph-Impl]
+The first law is a general law on assertion implication. If two graphes $g$
+and $h$ have the same toplogical structure, and the antecedent on each edge $%
+e$ of $h$ implies that on $e$ of $h,$ and the consequent on each edge $e$ of
+$g$ implies that on $e$ of $h,$ then $\mathsf{cktSat}\ M\ g$ implies $%
+\mathsf{cktSat}\ M\ h.$
+\end{lemma}
+
+\begin{equation*}
+\left.
+\begin{array}{l}
+\isasymlbrakk\mathsf{cktSat}\ M\ g;\forall e\in \mathsf{edgeOf}\ g.\mathsf{%
+antOf}\ h\ e\rightsquigarrow \mathsf{antOf}\ g\ e; \\
+\forall e\in \mathsf{edgeOf}\ g.\mathsf{consOf}\ g\ e\rightsquigarrow
+\mathsf{consOf}\ h\ e; \\
+\mathsf{isSameTopl\ }g\mathsf{\ }h\isasymrbrakk\Longrightarrow \\
+\mathsf{cktSat}\ M\ h%
+\end{array}%
+\right.
+\end{equation*}
+
+Let $wirte_{0}^{{}}=$ $\mathsf{AndList}[\mathsf{Is1}\ en_{0},din\ \mathsf{isB%
+}\ bD]$, $retain_{0}^{{}}=\mathsf{Is0}\ en_{0}$, $read_{0}^{{}}=\mathsf{%
+AndList}[\mathsf{Is0}\ wr,\mathsf{is1}\ sel_{0}]$. Assertion graph $g_{0}$
+is shown in Fig. \ref{}. Let $wirte_{1}^{{}}=$ $\mathsf{AndList}[\mathsf{Iis1%
+}\ en_{1},din\ \mathsf{isB}\ bD]$, $retain_{1}^{{}}=\mathsf{Is0}\ en_{1}$, $%
+read_{1}^{{}}=\mathsf{AndList}[\mathsf{Is0}\ wr,\mathsf{is1}\ sel_{1}]$.
+Assertion graph $g_{1}$ is shown in Fig. \ref{}
+
+If $bA$ is true, then $\mathsf{cktSat}\ mem\ g$ implies $\mathsf{cktSat}\
+mem\ g_{1};$ otherwise, by law \textsf{graph-Impl} again, $\mathsf{cktSat}\
+mem\ g$ implies $\mathsf{cktSat}\ mem\ g_{0}.$ Here we only analyze the case
+when $bA$ holds. From the fact that $bA$ is true, we have $a\ \mathsf{isB}\
+bA$ $\rightsquigarrow \mathsf{Is1}\ en_{1},$ then $write\rightsquigarrow
+write_{1};$ similarly, we also can prove that $retain\rightsquigarrow
+retain_{1}^{{}}$ ; and $read\rightsquigarrow read_{1}^{{}}.$ By law \textsf{%
+graph-Impl}, from $\mathsf{cktSat}\ mem\ g_{1},$ we infer $\mathsf{cktSat}\
+mem\ g.$
+
+$\mathsf{prod}$ $g\ h\equiv (vertexOf\ g,initOf\ g,edgeOf\ g,ant^{\prime
+},cons^{\prime }),$ where $ant^{\prime }$ $e=\mathsf{AndList}[\mathsf{antOf}$
+$g$ $e,\mathsf{antOf}$ $h$ $e],$ and $cons^{\prime }$ $e=\mathsf{AndList}[%
+\mathsf{consOf}$ $g$ $e,\mathsf{consOf}$ $h$ $e],$ for all $e\in edgeOf\ g.$
+
+\begin{lemma}[graph-Prod]
+Consider a non empty gragh list $G$, if all the elements of $G$ have the
+same toplogical structure and the same consequents, and $\mathsf{cktSat}\ M\
+G_{0},$ then $\mathsf{cktSat}\ M\ (\mathsf{gAntConj}\ G).$ The proof is
+rather simple, by the definition of $\mathsf{gAntConj}$, the antecedent of
+each edge $e$ of $\mathsf{gConsConj}\ G$ implies that of $e$ of $G_{0},$ and
+the consequent of $e$ of $\mathsf{gConsConj}\ G$ is the same as that of $e$
+of $G_{0}.$
+\end{lemma}
+
+\begin{equation*}
+\left.
+\begin{array}{l}
+\isasymlbrakk\mathsf{cktSat}\ M\ g;\mathsf{cktSat}\ M\ h;\mathsf{isSameTopl\
+}g\mathsf{\ }h\isasymrbrakk\Longrightarrow \\
+\mathsf{cktSat}\ M\ (\mathsf{prod}\text{ }g\ h)%
+\end{array}%
+\right.
+\end{equation*}
+
+$\mathsf{prodL}$ $G\equiv (vertexOf\ G_{0},initOf\ G_{0},edgeOf\
+G_{0},ant^{\prime },cons^{\prime }),$ where $ant^{\prime }$ $e=\mathsf{%
+AndList\ (map\ antOf}$ $\mathsf{(map\ edgeOf}\ G)),$ and $cons^{\prime }$ $e=%
+\mathsf{AndList\ (map\ consOf\ (map\ edgeOf}\ G))\mathsf{.}.$
+
+The lemma \textsf{grpah-Prod} can be extended as follows
+
+\begin{lemma}[graph-ProdL]
+Consider a non empty gragh list $G$, if all the elements of $G$ have the
+same toplogical structure, and $\mathsf{cktSat}\ M\ G_{i}$ for all $0\leq i<%
+\mathsf{len}\ G,$ then $\mathsf{cktSat}\ M\ (\mathsf{prodL}$ $G).$
+\end{lemma}
+
+\begin{equation*}
+\left.
+\begin{array}{l}
+\isasymlbrakk0<\mathsf{len}\ G;\forall 0\leq i<\mathsf{len}\ G.\mathsf{%
+isSameTopl\ }G_{0}\mathsf{\ }G_{i}\wedge \mathsf{cktSat}\ M\ G_{i}%
+\isasymrbrakk\Longrightarrow \\
+\mathsf{cktSat}\ M\ (\mathsf{prodL}\text{ }G)%
+\end{array}%
+\right.
+\end{equation*}
+
+\begin{lemma}
+\label{lemma of substitution}$\left. {}\right. $
+\end{lemma}
+
+\noindent $\left. \isasymlbrakk\mathsf{cktSat}\ M\ G\isasymrbrakk%
+\Longrightarrow \mathsf{cktSat}\ M\ \left( \mathsf{bsubstitute\ }subst%
+\mathsf{\ }G\right) \right. $
+
+Recall that path is called initial iff it starts in the initial vertex init.
+A finite initial path
+
+\section{Symmetry of Circuits and Assertion Graphes}
+
+First we define permutations on states. %These are similar to their
+%counterparts in \cite{phdThesisODDarbi}.
+
+\begin{definition}
+Permutation on states.
+
+$\left.
+\begin{tabular}{l}
+$\mathtt{appSym2State::(node\Rightarrow node)\Rightarrow state\Rightarrow
+state}$ \\
+\ \ $\mathtt{appSym2State\ f\ s=\lambda \ n.s\ (f\ n))}$%
+\end{tabular}%
+\right. $
+\end{definition}
+
+\begin{definition}
+Symmetry of circuits
+\end{definition}
+
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{sym::(node=>node)\Rightarrow (state\Rightarrow state)\Rightarrow
+bool}$\ \  \\
+$\mathtt{sym\ f\ M\equiv bij\ f\wedge }$ \\
+$\mathtt{(\forall s.appSym2State\ f\ (M\ s)=M\ (appSym2State\ f\ s)\ \ }$%
+\end{tabular}%
+\end{equation*}
+
+%\begin{definition}
+%Permutation on sequences.
+
+%\begin{tabular}{l}
+%$\mathtt{appSym2Seq::(node\Rightarrow node)\Rightarrow stateSeq\Rightarrow
+%stateSeq}$ \\
+%$\ \ \mathtt{appSym2Seq\ f\ sq\equiv \lambda \ t.appSym2State\ f\ (sq\ t)}$%
+%\end{tabular}
+%\end{definition}
+
+\begin{definition}
+Permutation on formulas.
+
+\begin{tabular}{l}
+$\mathtt{applySym2Form::(node\Rightarrow node)\Rightarrow
+instForm\Rightarrow instForm}$ \\
+$\mathtt{primrec}$ \\
+\ \ $\mathtt{appSym2Form\ f\ \mathtt{(Is0\ n})=Is0\ (f\ n)}$ \\
+\ \ $\mathtt{appSym2Form\ f\ (\mathtt{Is0\ n})=Is1\ (f\ n)}$ \\
+\ \ $\mathtt{appSym2Form\mathtt{\ f\ (}A\mathtt{\ }and}_{\mathtt{T}}\mathtt{%
+\ B)=}$\ \ $\mathtt{(appSym2Form\mathtt{\ }f\mathtt{\ }A)}\text{ }\mathtt{and%
+}_{\mathtt{T}}\mathtt{\ (appSym2Form\mathtt{\ }f\mathtt{\ }B)}$ \\
+\ \ $\mathtt{appSym2Form\mathtt{\ }f\mathtt{\ }(\mathtt{P}\longrightarrow _{%
+\mathtt{T}}\mathtt{A})=}$\ \ $\mathtt{P\longrightarrow _{\mathtt{T}%
+}(appSym2Form\mathtt{\ }f\mathtt{\ }A)\mathtt{\ }}$\ \  \\
+\ \ $\mathtt{appSym2Form\mathtt{\ }f\mathtt{\ }chaos}=\mathtt{chaos}$%
+\end{tabular}
+\end{definition}
+
+\begin{definition}
+Permutation on edge mapping function.
+
+$\left.
+\begin{tabular}{l}
+$\mathtt{appSym2Ef::(node\Rightarrow node)\Rightarrow edge2Form\Rightarrow
+edge2Form}$ \\
+\ \ $\mathtt{appSym2Ef\ f\ antf=\lambda \ e.applySym2Form\ f\ (antf\ e))}$%
+\end{tabular}%
+\right. $
+\end{definition}
+
+\begin{definition}
+Permutation on assertion graphs.
+
+\begin{tabular}{l}
+$\mathtt{appSym2Graph::(node\Rightarrow node)\Rightarrow graph\Rightarrow
+graph}$ \\
+\ \ $\mathtt{appSym2Graph\ f\ g=(\mathtt{vertexOf\ g},\mathtt{\mathtt{%
+initOf\ }}g\mathtt{,edgeOf\ g},appSym2Ef\ f\ (\mathtt{antOf\ g}),appSym2Ef\
+f\ (cons\mathtt{Of\ g}))}$%
+\end{tabular}
+\end{definition}
+
+\bigskip Let $wirte_{0}^{{}}=$ $\mathsf{AndList}[\mathsf{Is1}\ wr,\ \mathsf{%
+is1}\ sel_{0},din\ \mathsf{isB}\ bD]$, $retain_{0}^{{}}=\mathsf{AndList}[wr\
+\mathsf{isB}\ bWr$, $sel_{0}$ $\mathsf{isB}\ \lnot bWr]$, $read_{0}^{{}}=%
+\mathsf{AndList}[\mathsf{Is0}\ wr,\mathsf{is1}\ sel_{0}],$ $%
+outResult_{0}^{{}}=dout\ \mathsf{isB}\ bD$, Let $wirte_{1}^{{}}=$ $\mathsf{%
+AndList}[\mathsf{Is1}\ wr,\ \mathsf{is1}\ sel_{1},din\ \mathsf{isB}\ bD]$, $%
+retain_{1}^{^{{}}}=\mathsf{AndList}[wr\ \mathsf{isB}\ bWr$, $sel_{1}\
+\mathsf{isB}\ \lnot bWr]$, $read_{1}^{{}}=\mathsf{AndList}[\mathsf{Is0}\ wr,%
+\mathsf{is1}\ sel_{0}],$ $outResult_{1}^{{}}=dout\ \mathsf{isB}\ bD,$ and $%
+f=\lambda x.(\mathsf{if}$ $x=sel_{0}$ $\mathsf{then}$ $sel_{1}$ $\mathsf{%
+else\ if}$ $x=sel_{1}$ $\mathsf{then}$ $sel_{0}$ $\mathsf{else\ if}$ $%
+x=m_{0} $ $\mathsf{then}$ $m_{1}$ $\mathsf{else\ if}$ $x=m_{1}$ $\mathsf{then%
+}$ $m_{0}$ else $x)$. We have that $\mathsf{appSym2Graph}$ $f$ $g_{0}=g_{1}.$
+Notice that we also have $\mathsf{sym}\ f\ mem,$ therefore from $\mathsf{%
+cktSat}\ mem\ g_{0},$ we can infer that $\mathsf{cktSat}\ mem\ g_{1}.$
+
+Each permutation can be defined in terms of a composition of swap functions.
+Here we use a predicate $\mathsf{isSwap}$ to specify that a function is a
+swap function: $\mathsf{isSwap}\ f\equiv \forall a\mathtt{\mathtt{\ }}b.f%
+\mathtt{\mathtt{\ }}a=b\longrightarrow f\mathtt{\mathtt{\ }}b=a.$
+
+Next lemma introduces an important result which encapsulates the relation
+between symmetric netlists and the symmetric GSTE assertion graphes.
+
+\begin{lemma}[graph-Sym]
+Consider a non empty gragh list $G$,
+\end{lemma}
+
+\begin{equation*}
+\left.
+\begin{array}{l}
+\isasymlbrakk\mathsf{sym}\ f\ M;\ \mathsf{isSwap\ }f;\ \mathsf{cktSat}\ M\ g%
+\isasymrbrakk\Longrightarrow \\
+\mathsf{cktSat}\ M\ \left( \mathtt{appSym2Graph}\ f\ g\right)%
+\end{array}%
+\right.
+\end{equation*}
+
+This result guarantees us that we only need verify one representative GSTE
+assertion from an equivalence class, and deduce the correctness of the
+entire class for symmetric circuits.
+
+\subsection{Verification Problem of FIFO}
+
+In this section, we first show the verification problem of FIFO, which uses
+the structure symmetry of a bit vector. A FIFO is a very common data
+structure in hardware design, which is also a typical example used in STE or
+GSTE literature \cite{YangS03}. We use the register shifting implementation
+for our case study, which is taken from the examples of VIS \cite%
+{Brayton96vis}. The FIFO is shown as follows:
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.9\textwidth]{fifo.eps}
+\end{center}
+\caption{FIFO structure}
+\label{fig:fifo}
+\end{figure}
+
+The tail pointer points to the first element of the queue unless the buffer
+is empty, the new data is always inserted in position 0 of the buffer, after
+shifting the contents up by one position. $dataOut$ gives the first element
+of the queue unless the buffer is empty, in which case its value is
+arbitrary.
+
+For notation convenience, we also introduce a syntactical abbreviations for
+symbolic values assignments to a vector: $ns\mathsf{\ bvAre\ }bvs\equiv
+\mathsf{AndList}\ (\mathsf{map}\ \mathsf{isB}\ (\mathsf{zip}\ ns\ bvs))$. We
+also write $xs_{i}$ for $xs!i$, $mem_{i,j}$ for $mem!i!j$ respectively.
+
+$\mathsf{push}=$\ $\mathsf{AndList\ [Is1}\ "push",\mathsf{Is0}\ "rst"]$
+
+$\mathsf{pop}=\mathsf{AndList\ [Is1}\ "pop",\mathsf{Is0}\ "push",\mathsf{Is0}%
+\ "rst"]$
+
+$\mathsf{pushData}\ D=$\ \ $\mathsf{AndList\ [Is1}\ "push",\ dataIn\ \mathsf{%
+bvAre}\ D]$
+
+$\mathsf{nFull=Is0}\ "full"$
+
+$\mathsf{full=Is1}\ "full"$
+
+$\mathsf{nEmpty=Is0}\ "empty"$
+
+$\mathsf{empty=Is1}\ "empty"$
+
+where nodes are named by a string respectively, $dataIn$ a vector of input
+data nodes, $D$ a vector of symbolic boolean variables.
+
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.9\textwidth]{fifoGste.eps}
+\end{center}
+\caption{FIFO assertion graph $ag$}
+\label{fig:fifoGste}
+\end{figure}
+
+The behavior of a FIFO can be summarized as follows: (1) the full and empty
+flags of the FIFO should be set correctly, and (2) elements pushed into the
+FIFO must be popped in the right order uncorrupted. In the GSTE assertion
+graph for the 3-deep FIFO shown in Fig. \ref{fig:fifoGste}, the initial
+state v0 is a chaos state where the value of any state variable is X, and
+the other vertices are the counting states keeping track of number of
+entries in the FIFO. The edges in the graph correspond to the transitions
+between states, which is caused by the rest, push, pop actions. The
+antecdents in the edges specify the input settings for reset, push, and pop
+actions, while consequents in these edges pecify the changes on the full and
+empty flags and data outputs.
+
+The structural symmetry, which exists between two bit nodes of bit-vectors
+such as $dataIn$ and $dataOut$ in FIFO is used for symmetry reduction. The
+intuition to find this kind of symmetry is quite obvious. For indices $i$, $%
+j $ which are less than the width of the data, a symmetry function is used
+by us which swaps node $dataIn[i]$ with $dataIn[j],$ $dataOut[i]$ with $%
+dataOut[j],$ and $mem[k][i]$ with $mem[k][j]$ for any index $k$ which is
+less than the depth of FIFO.
+
+The verification steps of goal $\mathsf{cktSat}\ fifo\ ag$ are
+backward-style proofs combined with GSTE runs.
+
+%For the main goal $\mathsf{cktSat}\ fifo\ ag$, by rule graph-Impl, we only
+%need prove the goal $\mathsf{cktSat}\ fifo\ (\mathsf{prodL}\ G),$ where we
+First we define a parameterized assertion graph. Let $\mathsf{pushDataI}\ D\
+i=$\ \ $\mathsf{AndList\ [Is1}\ "push",\ dataIn_{i}\ \mathsf{isB}\ D_{i}],$
+
+$antF\ i$ $e=\mathsf{val\ }(v,v^{\prime })\ \mathsf{in}$
+
+let $pushDI=\mathsf{pushDataI}\ D\ i$ in
+
+if $(v=v_{1}\&v^{\prime }=v_{7})$
+
+else if $(v=v_{2}\&v^{\prime }=v_{6})$ $pushDI$
+
+else if $(v=v_{3}\&v^{\prime }=v_{5})$ $pushDI$
+
+else $\mathsf{antOf}$ $ag$ $e,$
+
+$consF\ i$ $e=\mathsf{val}$ $(v,v^{\prime })$ $\mathsf{in}$
+
+$\mathsf{if}$ $(v^{\prime }=v_{8})$ $dout_{i}=D_{i}$
+
+else $\mathsf{consOf}$ $ag$ $e$,
+
+$gf$ $i=<\mathsf{vertexOf}\ ag,\mathsf{initOf}\ ag,\mathsf{edgeOf}\ ag,antF\
+i,consF\ i>,$
+
+$G=\mathsf{map}\ gf\ widthL$.
+
+One parameterized GSTE assertion graph $gf$ $i$ is shown as Fig. \ref{}.
+\begin{figure}[tbph]
+\begin{center}
+\includegraphics[width=.9\textwidth]{fifoGste2.eps}
+\end{center}
+\caption{Assertion graph $gf$ $i$}
+\label{fig:fifoGste}
+\end{figure}
+
+In order to prove $\mathsf{cktSat}\ fifo\ ag,$ by rule repList and
+graph-impL, we only need prove $\mathsf{cktSat}\ fifo\ (\mathsf{prodL}\ G)$;
+note that for each edge e$\in \mathsf{edgeOf}\ ag,$ $\mathsf{antOf}$ $ag$ $%
+e\rightsquigarrow \mathsf{antOf}$ $(\mathsf{prodL}\ G)$ $e$ and $\mathsf{%
+consOf}$ $ag$ $e\rightsquigarrow \mathsf{consOf}$ $(\mathsf{prodL}\ G)$ $e.$
+For goal $\mathsf{cktSat}\ fifo\ (\mathsf{prodL}\ G),$ then by rule
+grph-ProdL, we only need prove the following 16 subgoals.
+
+\begin{description}
+\item[(1)] $\mathsf{cktSat}\ fifo\ G_{0}$,
+
+\item[(1)] $\mathsf{cktSat}\ fifo\ G_{1}$,
+
+\item $...$
+
+\item[(16)] $\mathsf{cktSat}\ fifo\ G_{15}$
+\end{description}
+
+In this case study, the structural symmetry exists between two bit nodes of
+a bit-vector in FIFO. The intuition to find this kind of symmetry is quite
+obvious. For instance, the sub-logic nets which are driving the nodes $%
+dataOut[0]$ and $dataOut[1]$ are symmetric. In our implementation, the
+symmetry mapping function $f$ is confirmed and computed by searching and
+comparing the two the sub-logic nets. This procedure starts from the nodes $%
+dataOut[0]$ and $dataOut[1]$, stops at input nodes or when the mapping node
+pairs have been searched. The computed function $f$ for the two sub-logic
+netss waps node $dataIn[0]$ with $dataIn[1],$ $dataOut[0]$ with $dataOut[1],$
+and $mem[k][0]$ with $mem[k][1]$ for any index $k$ which is less than the
+depth of FIFO.
+
+For (1), we directly run GSTE to model check it. \ For the remaining
+unsolved goals (2)-(16), we use symmetry reduction, instead of repeating a
+GSTE run. For instance, for the goal (2), from (1), due to the exsitence of
+the structure symmetry function mapping from the sub-logic nets driving $%
+dataOut[0]$ to that driving $dataOut[1]$, by rule graph-Sym, we have $%
+\mathsf{cktSat}\ fifo\ G_{1}$.
+
+$outCons=dout\ \mathsf{bvAre}\ vOfdatain$
+
+\subsection{Verification Problem of Shift Memory}
+
+Dynamic shift (also known as sequential shift) modules are frequently used
+in FPGA (Field-Programmable Gate Array) designs. A block diagram of the
+dynamic shift module is shown in Figure 8. %The
+%basic functionality of a dynamic shift module can be viewed as a
+%modified version of a FIFO (first-in-first-out) queue, but it is
+%significantly different from the FIFO studied in [YG02].
+If the shift signal is true, the incoming data din will be put (shift) into
+the dynamic shift module. The data stored inside the dynamic shift module
+can be accessed via the read address $rdaddr$. The value of the read address
+represent the age of the stored data with respect to the shift operation,
+i.e., address 0 will access the data most recently shifted into the module,
+address 1 will access the second most recent shifted data, and so on. If we
+want to shift in new data and the module is already full, it will discard
+the oldest data to make room for the incoming data. All sequential
+operations happen at the rising edge of the clock, so we can use a single
+clock cycle as the basic timing unit. There are many different
+implementations of the dynamic shift module. A naive implementation would
+involve a long chain of registers for storage with some muxing logic read
+access. Such implementation tend to blow up the register/logic area usage
+and may trigger place and route issues for large data/address sizes. Figure
+8 shows one of the many implementations that are publicly available in the
+FPGA CAD result from Synplicity [Syn]. It used a memory module that is
+readily available in most FPGAs for data storage, and used some address
+adjustment logic to translate the dynamic shift inputs into read/write
+operations for the memory module. %Under certain
+%timing/area/power constraints, such an implementation may be con-
+%sidered as an ideal design. There are also many other
+%implementations for various other situations. In this experiment, we
+%will prove this specific implementation is functionally correct with
+%respect to dynamic shift operations.
+
+The top level specification is shown in Figure \ref{}. The specification
+states that once upon a time we shift a data $D$ into the dynamic shift
+module. That may be followed by zero, one, or more cycles where there is no
+shift (self-loop at vertex $v_0$). During that time, whenever we read the
+address $0$, the data output should match the original data $D$. We may
+shift any new data dummy into the module (edge $v_0$ to $v_1$). At the time
+of the shift, the output of read address 0 should still match $D$ because
+the data storage happens on the rising edge of the clock. After the shift
+(vertex $v_1$), the data output should match D whenever we read address 1.
+This patten may go on all the way through vertex $v_{127}$. After the last
+shift (vertex $v_{128}$), the original $D$ has been shifted out of the
+module so we cannot read it anymore. We decompose the proof into two parts:
+address counter and data path. First, we prove in Figure 9(b) t
+
+$adrWid=7$
+
+$dataWid=32$
+
+$maxEntry=2\ast \ast adrWid - 1$
+
+$entries=(0\ \mathsf{upto}\ maxEntry)$
+
+$initAnt=\mathsf{AndList}\ [\mathsf{Is1}\ shift,din\ \mathsf{bvAre}\
+vOfDin,wPtr\ \mathsf{bvAre}\ vOfWptr]$
+
+$writeAnt=\mathsf{Is1}\ shift$
+
+$retainAnt=\mathsf{AndList\ }[\mathsf{Is0}\ shift,addr\ \mathsf{bvAre}\ \
+vOfAge]$
+
+$read= rdaddr\ bvAre\ vOfAge $
+
+$outCons\ ith=\mathsf{When\ }(vOfAge=ith)\ (dout\ \mathsf{bvAre}\ vOfDin)$
+
+Because the number of stored entries is 127, therefore we have $vOfDin=0\vee
+...vOfDin=maxEntry.$ Here we show the case when $vOfDin=0.$ First we need
+some preliminary definition as follows:
+
+Then we construct a parameterized GSTE graph $G$ $i$, which is shown in Fig.
+
+Now we need prove that with the
+
+$retainAnt^{\prime }=\mathsf{AndList\ }[\mathsf{Is0}\ shift,raddr\ \mathsf{%
+bvAre}\ vOfWptr]$
+
+At last, we analyze the reason why symmetry reduction can help us to fight
+for state explosion in the context of GSTE verification. As mentioned in the
+introduction, GSTE is aimed to the verification of $\omega $-regular
+properties. GSTE model checking algorithm needs to manipulate the union and
+comparing operations of state set, which are the basic operations to compute
+the fix point of the reachable sets. Therefore the memory and time usage of
+GSTE is greater than those of STE. Symmetry reduction can help more in GSTE
+than in STE. For instance, for the FIFO verification, the verification
+problem for a FIFO with 64-bits data width is reduced to one for a part of
+this FIFO with only one bit width after symmetry reduction. In the
+verification of the former, at least $64*depth + c$ state variables are
+needed, where $c$ is the number of control variables and $depth$ is the
+depth of the FIFO. However, in the verification problem of the latter
+reduced problem, only $depth + c$ variables are needed. Therefore, the
+memory and time usage for the union and comparing operations in the reduced
+verification problem are decreased greatly than those for non-reduced one.
+\bibliographystyle{plain}
+\bibliography{gste,Isabelle}
+
+\end{document}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 AMs and on
+verification of FIFO. Section~\ref{sec:conclusion} concludes the
+paper. In the appendix,  all the notation conventions and the
+lemmas, which are used in this work, are listed.
+
+\section{Background}
+
+\label{sec:background}
+
+\subsection{The Four Valued Lattice}
+
+\label{The four valued lattice}
+
+Four values $\mathsf{ff}$, $\mathsf{tt},$ $\mathsf{X}$, and $\mathsf{\top }$
+are used in STE simulation \cite{CarFmBySymEvaOfPartTraj}. $\mathsf{ff}$ and
+$\mathsf{tt}$ are standard binary values false and true. The third value $%
+\mathsf{X}$ stands for an unknown value, while the fourth value $\top $ a
+clash value. Formally, we define $\mathbb{V}$$=_{df}\left\{ \mathsf{ff},%
+\mathsf{tt},\mathsf{X},\mathsf{\top }\right\} $
+
+It is natural to introduce a truth information ordering $\sqsubseteq $ on $%
+\mathbb{V}$ as follows: %. The unknown value X contains no truth
+%information; the mutually incommensurable values $\mathsf{ff}$ and
+%$\mathsf{tt}$ contain sufficient information to determine truth
+%exactly, and the top value $\top $ contains inconsistent truth
+%information. Therefore, we define:
+$\mathsf{X}\sqsubseteq \mathsf{ff},$ $\mathsf{X}\sqsubseteq \mathsf{tt},$
+while $\mathsf{ff}$ and $\mathsf{tt}$ are incomparable, $\mathsf{ff}%
+\sqsubseteq \top $, and $\mathsf{tt}\sqsubseteq \top $. Namely, the
+unknown value $\mathsf{X}$ contains no truth information; the
+mutually incommensurable values $\mathsf{ff}$ and $\mathsf{tt}$
+contain sufficient information to determine truth exactly, and the
+top value $\top $ contains inconsistent truth information. In FORTE,
+$\mathbb{V}$ is implemented by a type boolPairs. Namely, a pair of
+Boolean values is used to implement a value in $\mathbb{V}$. We can
+easily see that $\mathbb{V}$ with the ordering relation $\sqsubseteq
+$ forms a lattice. We can introduce a least-upper bound operator
+$\sqcup $ with respect to the ordering $\sqsubseteq,$ which is
+formally defined in Table \ref{table:operator} in the appendix. Its
+rather routine to check that $a\sqsubseteq b$ if and only if $a\sqcup b$ $%
+=b. $ We can naturally define operators on $\mathbb{V}$ such as negation $%
+\mathsf{NOT_{4}}(\lnot _{4})$, conjunction $\mathsf{AND_{4}}(\wedge _{4})$,
+disjunction $\mathsf{OR_{4}}(\vee _{4}),$ and so on. See \cite%
+{CarFmBySymEvaOfPartTraj} for details.
+
+\subsection{A Formal Model of Circuit}
+
+A circuit is modelled by a netlist, which is a set of nodes (or
+wires) connected by logical entities such as I/O devices, gates and
+one-phase delays. I/O devices are pins connected to its environment.
+For simplicity, only input devices are used in this work. Gates
+describe combinational logics deciding the relationship between
+values of nodes. Delays refer to all sequential elements which can
+keep ``state".
+
+\begin{tabular}{l}
+$\mathtt{LIT=\ ONE\ |ZERO\ |DontCare}$ \\
+$\mathtt{LINE=LIT\ list}$ \\
+$\mathtt{PLA=LINE\ list}$ \\
+$\mathtt{entity=Input\ node\ |Gate\ node\ (node\ list)\ PLA}$ $|\mathtt{\
+|Delay\ node\ node}$%
+\end{tabular}
+
+Here we assume that $inp$, $out$ \ are node names, $inps$ is a list of node
+names, $tab$ is a table of type PLA. $\mathsf{Input}$\textsf{\ }$inp$ means
+that $inp$ is an input pin of a netlist under study which is an interface
+between the netlist and its environment. $\mathsf{Gate}$\textsf{\ }$out$%
+\textsf{\ }$inps$\textsf{\ }$tab$\textsf{\ }refers to a gate which
+has $out$ as its output node, and $inps$ as its input nodes, $tab$
+as its truth table. As does the library function
+$\mathsf{get\_node\_truth\_table}$ in FORTE, a PLA in this paper
+lists clauses for inputs when an output is to go high
+only. For example, $\mathsf{Gate\ }c_{1}\mathsf{\ }[a_{1},b_{1}]\mathsf{\ }[[%
+\mathsf{ONE},\mathsf{ONE}]]$ formally defines an AND gate. $\mathsf{Delay}$%
+\textsf{\ }$out\ inp$ defines a delay which has $inp$ as its input and $out$
+as its output respectively.
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{fig2.eps}
+\end{center}
+\caption{A netlist example }
+\label{comparator}
+\end{figure}
+
+For instance, consider the 2-bit comparator circuit netlist $cmp_2$ in Fig. %
+\ref{comparator}. The circuit consists of two XNOR-gates and an AND-gate.
+Let $xnorG_{0}\equiv \mathsf{Gate\ }c_{0}\mathsf{\ }[a_{0},b_{0}]\ $\ $[[%
+\mathsf{ZERO},\mathsf{ZERO}], [\mathsf{ONE},\mathsf{ONE}]]\mathsf{,}$ $%
+xnorG_{1}\equiv $ $\mathsf{Gate}$\ $c_{1}\ [a_{1},b_{1}]$ $\lbrack \lbrack
+\mathsf{ZERO},\mathsf{ZERO}],[\mathsf{ONE},\mathsf{ONE}]]$, %
+$andG\equiv \mathsf{Gate\ }out\mathsf{\ }[c_{0},c_{1}]$\ $\ [[\mathsf{ONE},%
+\mathsf{ONE}]],$ \ then the set $cmp_2=\{\mathsf{Input}$\ $a_{0},\mathsf{%
+Input}$\ $b_{0},\mathsf{Input}$\ $a_{1},\mathsf{Input}$ $b_{1}$,$xnorG_{0},$
+$xnorG_{1},$ $andG\} $ stands for the netlist $cmp_2$.
+
+For a logical entity $g$, we define a function $\mathsf{fanOut}$ to map $g$
+to its output node, namely, $\mathsf{fanOut}$ $g\equiv inp$, if $g=\mathsf{%
+Input}\ inp,$ or $\mathsf{fanOut\ }g\equiv out$ if $g=\mathsf{Gate\ }out%
+\mathsf{\ }inps\mathsf{\ }tab$ or $g=\mathsf{Delay\ }out\ inp\mathsf{\ }.$
+Similarly, we also define a function $\mathsf{fanIn}$ to map $g$ to the list
+of all its input nodes, that is, $\mathsf{fanIn}$ $g\equiv \lbrack ]$, if $g=%
+\mathsf{Input}\ inp,$ or $\mathsf{fanIn\ }g\equiv inps$ if $g=\mathsf{Gate\ }%
+out\mathsf{\ }inps\mathsf{\ }tab,$ or $\mathsf{fanIn\ }g\equiv \lbrack inp]$
+if $g=\mathsf{Delay\ }out\ inp.$
+
+Consider a node $n$, a logical entity set $nl$, we say $\mathsf{isDefinedIn}%
+\ n\ nl$ if $n$ is defined as an output of a logical entity in the $nl$.
+More formally, $\mathsf{isDefinedIn}\ n\ nl\equiv l\in nl\wedge $ $\mathsf{%
+fanOut}\ l=n.$ The set of all the nodes defined in the $nl$ is denoted by $%
+\mathsf{defAsOuts\ nl}\equiv \left\{ n.\mathsf{isDefinedIn}\ n\ nl\right\} .$
+Obviously there exists the unique one-to-one mapping from a logical entity
+to its output node name, we define $\mathsf{lookUp}\ nl\ n,$ which returns a
+logical entity whose fan out is $n$ in netlist $nl.$
+
+Intuitively, a netlist is simply a set of logical entities connected by
+nodes, but adding entities into a netlist should follow some restriction
+rules to guarantee the legality of the structure of the netlist. Here we
+introduce an inductive definition for the set of all the netlists, as shown
+below:
+
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{netlists::(entity\ set)\ set}$ \\
+$\mathtt{nilNetlist:}\varnothing \in \mathtt{netlists;}$ \\
+$\mathtt{addInput:}$ \\
+$\ \ \isasymlbrakk\mathtt{nl}\in \mathtt{netlists;\lnot isDefinedIn\ n\ nl}%
+\isasymrbrakk$ \\
+$\ \ \Longrightarrow \mathtt{\ \{Input\ n\}\cup nl}\in \mathtt{netlists;}$
+\\
+$\mathtt{addDelay:}$ \\
+$\ \ \isasymlbrakk\mathtt{nl}\in \mathtt{netlists;\lnot isDefinedIn\ n\ nl}%
+\isasymrbrakk$ \\
+$\ \ \Longrightarrow \mathtt{\ \{\mathtt{Delay}\ \mathtt{n\ inp}\}\cup nl\in
+netlists;}$ \\
+$\mathtt{addGate:}$ \\
+$\ \ \isasymlbrakk\mathtt{nl}\in \mathtt{netlists;\lnot isDefinedIn\
+n\ nl;}$\\
+$\forall \mathtt{inps}_{i}.\ \mathtt{(inps}_{i}\ \mathtt{mem}\ \mathtt{%
+inps)\longrightarrow isDefinedIn\ inps}_{i}\mathtt{\ nl};$ \\
+$\ \ \forall \mathtt{l}.(\mathtt{l}\ \mathtt{mem}\ \mathtt{tab}%
+)\longrightarrow \mathtt{length}\ \mathtt{l=length}\ \mathtt{inps}%
+\isasymrbrakk$ \\
+$\ \ \Longrightarrow \mathtt{\{Gate\ n\ inps\ tab\ \}\cup nl}\in \mathtt{%
+netlists.}$%
+\end{tabular}%
+\end{equation*}
+
+In the last three rules, the condition $\lnot \mathsf{isDefinedIn}\ n\ nl$
+requires that the output node $n$ of the newly added logical entity should
+not be an output of the existing entities in $nl$. This resolves the name
+conflicting of output nodes between two different logical entities in a
+netlist. In rule $\mathtt{addGate}$, the third condition requires that all
+the input nodes of the newly added combinational gate must have been defined
+in the existing netlist. Combining this condition and the condition $\lnot
+\mathsf{isDefinedIn}\ n\ nl$ can eliminate combinational cycle in a netlist.
+
+\subsection{ Syntax and Semantics of Trajectory Formula}
+
+\label{Sec:Syntax and semantics of trajectory formulas}
+
+\paragraph{States}
+
+A circuit state is an instantaneous snapshot of a circuit behavior given by
+an assignment of lattice values to nodes of the circuit. Therefore, type $%
+\mathtt{state}\mathtt{=node}\ \Rightarrow \mathtt{boolPairs}$ is defined. A
+state sequence assigns a state to a time point. Here we still use $\mathsf{%
+nat}$ to define the type $\mathsf{time}$. Thus, we define $\mathtt{%
+stateSeq=time}\Rightarrow \mathtt{state}$. Naturally, we extend the ordering
+relation on the $\mathsf{state}$ and $\mathsf{stateSeq}$ types. we define $%
+s_{1}\sqsubseteq _{s}s_{2}\equiv \forall n.s_{1}\ n\sqsubseteq s_{2}\ n,$
+and $sq_{1}\sqsubseteq _{sq}sq_{2}\equiv \forall t.sq_{1}\ t\sqsubseteq
+_{s}sq_{2}\ t$.
+
+\paragraph*{Trajectory Evaluation Logic\ \ }
+
+Specifications in STE are symbolic trajectory formulas. In order to
+formalize the syntax of trajectory formulas, we introduce a datatype $%
+\mathsf{trajForm}$ as follows:
+\begin{equation*}
+\left.
+\begin{array}{l}
+\mathtt{trajForm=Is1\ node\ |Is0\ node} \\
+\ \ \ \mathtt{|Next\ trajForm} \\
+\ \ \ \mathtt{|When\ bool\ trajForm\ \ }\  \\
+\ \ \ \mathtt{|AndList\ (trajForm\ list)}\ \ \
+\end{array}%
+\right.
+\end{equation*}
+
+In the above definition, the definition of trajectory formulas is naturally
+symbolic in the sense that the Boolean guard $P$ can be simply defined as a
+Boolean formula in HOL. For convenience, we use the following notation: $%
+\mathsf{isb}\ n\ v\equiv \mathsf{AndList}\ [\mathsf{When}$\ $\ v\ (\mathsf{Is1}\ n),[%
+\mathsf{When\ \lnot }v\ (\mathsf{Is0}\ n)],$ which specifies a
+symbolic value $v$ to a node $n\ .$
+
+The semantics of trajectory formulas is formally defined as a primary
+recursion function $\mathsf{valid}$ on datatype $\mathsf{trajForm}$.%
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{valid::stateSeq\Rightarrow trajForm\Rightarrow bool\ }\ \ \mathtt{%
+((\_\vDash \ \_)}\ \mathtt{[80,80]80)}\ \ \ \ \ \ \ \ \ \ \ \ $ \\
+$\mathtt{sq}\vDash (\mathtt{Is1\mathtt{\ }n)=tt\sqsubseteq (sq\mathtt{\ }0%
+\mathtt{\ }n)\ \ \ }$ \\
+$\mathtt{sq}\vDash \mathtt{(Is0\mathtt{\ }n)=ff\sqsubseteq (sq\mathtt{\ }0%
+\mathtt{\ }n)\ \ \ \ }$ \\
+$\mathtt{sq}\vDash \mathtt{AndList\ (tfList)=\forall tf.tf\ mem}\ \mathtt{%
+tfList\longrightarrow (sq}\vDash \mathtt{\ tf)\ }$ \\
+$\mathtt{sq}\vDash (\mathtt{When}$\ $\mathtt{P}\ \mathtt{A)=(P}%
+\longrightarrow \mathtt{sq}\vDash \mathtt{A)\ \ \ }$ \\
+$\mathtt{\mathtt{sq}\vDash \mathtt{(Next\ A)=((suffix\mathtt{\ }1\mathtt{\ }%
+sq)}\vDash \mathtt{\ A})\ }$\texttt{\ }%
+\end{tabular}%
+\end{equation*}
+
+where $\mathtt{((\_\vDash \ \_)}\ \mathtt{[80,80]80)}\ $is the infix
+notation and operator precedence definition for the function $\mathtt{valid,}
+$%notation $\mathtt{((\_\vDash \ \_)}\ \mathtt{[80,80]80)}$ stands for
+%an infix notation\texttt{\ }$\vDash $ for function $\mathtt{valid}$, and $%
+$\mathtt{suffix}\ \mathtt{i\ sq\equiv }\lambda \mathtt{\ t.sq(t+i})$. We
+write $sq\vDash A$ for $\mathtt{valid}\ sq\ A$ for notational convenience.
+
+\subsection{Next State Function and Trajectories}
+
+For each circuit $nl$, we can induce a next state functor operator $Y::%
+\mathtt{entity\ set}\Rightarrow $\ $\mathtt{stateSeq\Rightarrow
+stateSeq}$ such that $Y\
+nl$ is a closure function. Roughly speaking, the words ``a closure function $%
+Y\ nl$" means that applying $Y\ nl$ once can derive a closure of information
+in some form. %For instance, $\mathsf{fclosure%
+%}\ nl\ s$ is a closure of information on the result simulation state of a
+%circuit $nl$ at the driving state $s$.
+In detail, (1) $Y\ nl$ is \emph{monotonic}, $Y\ nl\ x\sqsubseteq Y\ nl\ y$
+if $x\sqsubseteq y%\footnote{%
+%Here the relation $\leq $ is some kind of partial order. In lattice domain, $%
+%\sqsubseteq $ is a partial order.}
+.$ (2) $Y\ nl$ is \emph{idempotent}: $Y\ nl\ x=Y\ nl\ \left( Y\ nl\ x\right)
+$; (3) $Y\ nl$ is \emph{extensive}: $x\sqsubseteq Y\ nl\ x$. See \cite{Li09}
+for detailed account.
+
+A trajectory is a result state sequence of some circuit netlist $nl$ after a
+run of simulation. It is a sequence in which no more information can be
+derived by forward propagation. Namely, the result sequence returned by a
+simulation run of $nl$ is the same as the stimulating sequence fed into the
+simulator. We define $\mathsf{trajOfCirc\ }nl$ as the set of all
+trajectories of a netlist $nl$:
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{trajOfCirc::entity\ set}\Rightarrow \mathtt{stateSeq\ set}$ \\
+$\mathtt{trajOfCirc\ nl}\equiv \mathtt{\{sq.Y\ nl\ sq=sq\}}$%
+\end{tabular}%
+\end{equation*}
+
+\subsection{Semantics of an STE Assertion}\label{subSec:STEassertion}
+
+Now we define the semantics of an STE assertion $A\leadsto C$, where both $A$
+and $C$ are trajectory formulas. $A$ is called the antecedent, which
+specifies with what values we should drive the simulation. $C$ is called the
+consequent, which specifies the expected results of the simulation. In order
+to define that a circuit $nl$ satisfies a trajectory assertion (A$\leadsto $%
+C), we introduce a predicate $\mathsf{cktSat}$ that checks the validity of
+an STE assertion. \vspace{-2mm}
+
+\begin{equation*}
+\begin{tabular}{l}
+ $\mathtt{assertion=}$
+$\mathtt{LeadsTo\ trajForm\ trajForm\ (infixr\leadsto 50)}$%
+\end{tabular}%
+\end{equation*}%
+\begin{equation*}
+\begin{tabular}{l}
+$\mathtt{cktSat::entityset}\Rightarrow \mathtt{assertion}\Rightarrow \mathtt{%
+bool}$ \\
+$\mathtt{cktSatnl(A}\leadsto \mathtt{C)=(}\forall \tau \mathtt{.}\tau \in
+\mathtt{(trajOfCircnl)}\longrightarrow \mathtt{(}\tau \models \mathtt{A}%
+\longrightarrow \t
